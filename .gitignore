@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.pdf
+*.txt
+!requirements.txt
+!README.md
+!heuristics.txt
+!ideas.txt
+!template.txt
+
+# Keep these files but ignore others
+!citesee-intro.txt
+!latex-final.txt
+!todo_list.txt
+!writinghistory.txt
+
+# API keys and secrets
+.env
+*.key
+*_api_key.txt
+
+# Output files (optional - comment out if you want to track them)
+# latex-final.txt
+# writinghistory.txt
+# todo_list.txt
+
