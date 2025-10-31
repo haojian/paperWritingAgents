@@ -1,0 +1,7 @@
+TexttoVideo is becoming popular, however, it is so slow that a short sentence requires generation in X hours. In this paper, we propose Protoframe, a prototyping tool for using AI to create videos. 
+At the core of Protoframe is a key abstraction, which supports JUXTAPOSED SEQUENTIAL STATIC IMAGES. Making the videos like a comic books. Each protoframe can progressively improve the granularity, allowing the users to manage the version. So creators can quickly verify key aspects of the video they will have, such as the storyline, the shots, the environment. 
+
+
+three key ideas: juxtaposed sequential images; version control across fidelity; on-demand rendering. 
+
+the benefits are that: video creators can quickly create video prototype, and fail it quickly. 

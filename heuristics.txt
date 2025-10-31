@@ -1,0 +1,13 @@
+1. In the first paragraph, you should provide only the necessasry background information. No bullshit. Direct to the point. Focus on the problem. 
+2. In the second paragraph, you should review the relevant literature, and articulate the research gap. 
+3. In the third paragraph, you need to explain what you did in this paper. what are the benefits and promises of your solution. 
+4. In the next few paragraphs, you need to articulate the technical challenges you have overcomed or the special new ideas you have in the paper. 
+5. Then you should explain your implementation. Not too much details. Do not make it too long.
+6. Then you should explain your experiments to evaluate your claim. Why is your system better than relevant systems? 
+7. Finally, you should summarize your research contributions. 
+8. Avoid redundancy. Don't repeat. It's for scientific research. So avoid sales pitch without concrete evidence. 
+9. Generate text in latex format. 
+10. Follow the styles in book "The Elements of Style". For example, avoid passive tense as much as possible. 
+11. Have the contributions in the bullet points. No bullshit. These should be ground in new knowledge contributions. Also state explicitly, we contributes blabla.
+12. The first sentence of the first paragaph should be something that everyone agrees. Avoid use "while" as the first word. 
+13. Write the system design in the present tense, but write all the experiments in the past tense. 

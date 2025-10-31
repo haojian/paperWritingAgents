@@ -1136,20 +1136,6 @@ Regenerate the text focusing STRICTLY on the key ideas provided."""
         
         return is_relevant, issues
     
-    def _generate_text_with_ai(self, ideas: str, template: str) -> str:
-        """
-        Generate text using AI API based on ideas and template.
-        (Legacy method, use _generate_text_with_validation_and_feedback instead)
-        
-        Args:
-            ideas: Main ideas content
-            template: Template structure
-            
-        Returns:
-            Generated text content
-        """
-        return self._generate_text_with_validation_and_feedback(ideas, template)
-    
     def _generate_with_gemini(self, ideas: str, template: str, feedback: Optional[str] = None) -> str:
         """
         Generate text using Google Gen AI SDK (Gemini API).
