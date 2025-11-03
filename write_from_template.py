@@ -8,7 +8,7 @@ Usage: python write_from_template.py <ideas_file> <template_file> <output_file> 
 
 import sys
 import os
-from agents import StudentWriterAgent
+from student_writer import StudentWriterAgent
 
 
 def main():

@@ -6,7 +6,7 @@ Usage: python generate_feedback.py <heuristics_file> <writinghistory_file> <outp
 
 import sys
 import os
-from agents import ProfessorFeedbackAgent
+from professor_feedback import ProfessorFeedbackAgent
 
 
 def main():

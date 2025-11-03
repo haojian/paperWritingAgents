@@ -3,7 +3,9 @@ Main Coordinator for Research Paper Writing Agents
 Orchestrates interactions between Student Writer, Style Analyzer, and Professor Feedback agents.
 """
 
-from agents import StudentWriterAgent, StyleAnalyzerAgent, ProfessorFeedbackAgent
+from student_writer import StudentWriterAgent
+from style_analyzer import StyleAnalyzerAgent
+from professor_feedback import ProfessorFeedbackAgent
 from typing import List
 import json
 

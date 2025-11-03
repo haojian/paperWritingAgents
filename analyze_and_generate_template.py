@@ -6,7 +6,7 @@ Usage: python analyze_and_generate_template.py <input_file> <output_file> [secti
 
 import sys
 import os
-from agents import StyleAnalyzerAgent
+from style_analyzer import StyleAnalyzerAgent
 
 
 def main():

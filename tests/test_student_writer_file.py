@@ -5,7 +5,7 @@ Demonstrates generating text from ideas and template files.
 """
 
 import os
-from agents import StudentWriterAgent
+from student_writer import StudentWriterAgent
 
 
 def main():

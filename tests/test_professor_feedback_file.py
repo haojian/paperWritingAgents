@@ -5,7 +5,7 @@ Demonstrates generating actionable to-do list from heuristics and writing histor
 """
 
 import os
-from agents import ProfessorFeedbackAgent
+from professor_feedback import ProfessorFeedbackAgent
 
 
 def main():

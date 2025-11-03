@@ -42,15 +42,17 @@ Thumbs.db
 *.txt
 !requirements.txt
 !README.md
-!heuristics.txt
-!ideas.txt
-!template.txt
 
-# Keep these files but ignore others
-!citesee-intro.txt
-!latex-final.txt
-!todo_list.txt
-!writinghistory.txt
+# Resource folders (track structure, ignore contents by default)
+input/*
+!input/.gitkeep
+!input/README.md
+output/*
+!output/.gitkeep
+!output/README.md
+intermediate/*
+!intermediate/.gitkeep
+!intermediate/README.md
 
 # API keys and secrets
 .env

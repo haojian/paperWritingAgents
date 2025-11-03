@@ -9,7 +9,7 @@ Usage: python revise_from_todo.py <todo_list_file> <writinghistory_file> [ideas_
 
 import sys
 import os
-from agents import StudentWriterAgent
+from student_writer import StudentWriterAgent
 
 
 def main():

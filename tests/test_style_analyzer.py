@@ -3,7 +3,7 @@ Test script for Style Analyzer Agent
 Tests semantic analysis and template generation.
 """
 
-from agents import StyleAnalyzerAgent
+from style_analyzer import StyleAnalyzerAgent
 
 def test_style_analyzer():
     """Test the style analyzer with a sample section."""

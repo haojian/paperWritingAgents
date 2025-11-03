@@ -107,13 +107,25 @@ extractor = PDFSectionExtractorAgent(
 content = extractor.extract_section("paper.pdf", "Introduction")
 ```
 
+**Note:** The three main agents (`StudentWriterAgent`, `StyleAnalyzerAgent`, `ProfessorFeedbackAgent`) are now top-level modules. You can import them directly:
+```python
+from student_writer import StudentWriterAgent
+from style_analyzer import StyleAnalyzerAgent
+from professor_feedback import ProfessorFeedbackAgent
+```
+
+Or for backward compatibility:
+```python
+from agents import StudentWriterAgent, StyleAnalyzerAgent, ProfessorFeedbackAgent
+```
+
 ## API Reference
 
 ### Style Analyzer Agent
 
 **Analyze text directly:**
 ```python
-from agents import StyleAnalyzerAgent
+from style_analyzer import StyleAnalyzerAgent
 
 analyzer = StyleAnalyzerAgent(
     api_provider="gemini",  # or "openai"
@@ -126,7 +138,7 @@ analysis = analyzer.analyze_section(section_text, section_name="Introduction")
 
 **Analyze file and generate template file:**
 ```python
-from agents import StyleAnalyzerAgent
+from style_analyzer import StyleAnalyzerAgent
 import os
 
 analyzer = StyleAnalyzerAgent(
@@ -136,8 +148,8 @@ analyzer = StyleAnalyzerAgent(
 
 # Analyze a text file and save template to output file
 result = analyzer.analyze_file_and_generate_template(
-    input_file_path="citesee-intro.txt",
-    output_file_path="template.txt",
+    input_file_path="input/citesee-intro.txt",
+    output_file_path="output/template.txt",
     section_name="Introduction"  # Optional: will infer from filename
 )
 
@@ -159,7 +171,8 @@ content = extractor.extract_section(pdf_path, section_title)
 ### Other Agents
 
 ```python
-from agents import StudentWriterAgent, ProfessorFeedbackAgent
+from student_writer import StudentWriterAgent
+from professor_feedback import ProfessorFeedbackAgent
 
 writer = StudentWriterAgent()
 content = writer.write_section("Introduction", "Topic")
@@ -191,14 +204,30 @@ The system generates:
 
 ```
 research_paper_agents/
+├── student_writer.py          # Student Writer Agent (top-level)
+├── style_analyzer.py          # Style Analyzer Agent (top-level)
+├── professor_feedback.py     # Professor Feedback Agent (top-level)
 ├── agents/
 │   ├── __init__.py
-│   ├── student_writer.py
-│   ├── style_analyzer.py
-│   ├── pdf_section_extractor.py
-│   └── professor_feedback.py
+│   └── pdf_section_extractor.py
+├── tests/                     # Unit tests
+│   ├── __init__.py
+│   ├── run_tests.py          # Test runner
+│   ├── test_student_writer.py
+│   ├── test_professor_feedback.py
+│   ├── test_style_analyzer.py
+│   ├── test_pdf_extractor.py
+│   └── test_integration.py
+├── input/                     # Input resource folder
+├── output/                    # Output resource folder
+├── intermediate/              # Intermediate resource folder
+├── resources/                 # PDF resources
 ├── main.py
 ├── extract_section.py
+├── analyze_and_generate_template.py
+├── write_from_template.py
+├── generate_feedback.py
+├── revise_from_todo.py
 ├── requirements.txt
 └── README.md
 ```

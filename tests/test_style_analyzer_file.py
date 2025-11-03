@@ -5,7 +5,7 @@ Demonstrates analyzing a text file and generating a template.
 """
 
 import os
-from agents import StyleAnalyzerAgent
+from style_analyzer import StyleAnalyzerAgent
 
 
 def main():
