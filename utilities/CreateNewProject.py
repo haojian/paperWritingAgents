@@ -1,6 +1,34 @@
 """
 Create New Project Utility
-Creates a new project folder structure under the Projects directory.
+
+This utility creates a new project folder structure under the Projects directory
+with all necessary subdirectories and initial files for a research paper project.
+
+Usage:
+    # Command-line interface
+    python utilities/CreateNewProject.py "MyResearchProject"
+    
+    # Or as a module
+    python -m utilities.CreateNewProject "MyResearchProject"
+    
+    # Or programmatically
+    from utilities import CreateNewProject
+    creator = CreateNewProject()
+    project_dir = creator.create_project("MyResearchProject")
+
+Project Structure Created:
+    projects/
+    └── [project_name]/
+        ├── Memory/
+        │   ├── ProjectMemory.txt      # Key ideas, previous content, outlines
+        │   └── TempMemory.txt          # Temporary revision feedback
+        ├── Intermediate/
+        │   ├── AutoWritingHistory.txt  # Writing history log
+        │   └── TodoHistory.txt         # Todo list history
+        └── Output/
+            ├── plaintext.txt           # Plain text output
+            └── latex.txt               # LaTeX output
+
 """
 
 import os
@@ -11,32 +39,19 @@ from typing import Optional
 class CreateNewProject:
     """Utility to create new project folder structure."""
     
-    def __init__(self, projects_base_dir: str = "Projects"):
-        """
-        Initialize CreateNewProject utility.
-        
-        Args:
-            projects_base_dir: Base directory for projects (default: "Projects")
-        """
+    def __init__(self, projects_base_dir: str = "projects"):
+        """Initialize with projects base directory (default: "projects")."""
         self.projects_base_dir = Path(projects_base_dir)
         self.projects_base_dir.mkdir(exist_ok=True)
     
     def create_project(self, project_name: str) -> Path:
-        """
-        Create a new project folder structure.
-        
-        Args:
-            project_name: Name of the project
-            
-        Returns:
-            Path to the created project directory
-        """
+        """Create a new project folder structure with all necessary files."""
         # Create project directory
         project_dir = self.projects_base_dir / project_name
         project_dir.mkdir(parents=True, exist_ok=True)
         
-        # Create Project Memory directory
-        project_memory_dir = project_dir / "Project Memory"
+        # Create Memory directory
+        project_memory_dir = project_dir / "Memory"
         project_memory_dir.mkdir(exist_ok=True)
         
         # Create ProjectMemory.txt
@@ -79,8 +94,8 @@ class CreateNewProject:
             with open(plaintext_file, 'w', encoding='utf-8') as f:
                 f.write("")
         
-        # Create output.txt
-        output_file = output_dir / "output.txt"
+        # Create latex.txt
+        output_file = output_dir / "latex.txt"
         if not output_file.exists():
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write("")
@@ -88,7 +103,7 @@ class CreateNewProject:
         print(f"✓ Project '{project_name}' created successfully!")
         print(f"  Project directory: {project_dir}")
         print(f"  Structure:")
-        print(f"    - Project Memory/")
+        print(f"    - Memory/")
         print(f"      - ProjectMemory.txt")
         print(f"      - TempMemory.txt")
         print(f"    - Intermediate/")
@@ -96,7 +111,7 @@ class CreateNewProject:
         print(f"      - TodoHistory.txt")
         print(f"    - Output/")
         print(f"      - plaintext.txt")
-        print(f"      - output.txt")
+        print(f"      - latex.txt")
         
         return project_dir
 
@@ -107,8 +122,12 @@ def main():
     
     if len(sys.argv) < 2:
         print("Usage: python CreateNewProject.py <project_name>")
-        print("\nExample:")
-        print('  python CreateNewProject.py "MyResearchPaper"')
+        print("   or: python -m utilities.CreateNewProject <project_name>")
+        print("\nExamples:")
+        print('  python utilities/CreateNewProject.py "MyResearchPaper"')
+        print('  python -m utilities.CreateNewProject "My Paper"')
+        print("\nThis will create a project structure at:")
+        print("  projects/<project_name>/")
         sys.exit(1)
     
     project_name = sys.argv[1]

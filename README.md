@@ -39,7 +39,7 @@ research_paper_agents/
 ├── paper_analysis/              # Paper annotation files
 ├── projects/                    # Project data
 │   └── [project_name]/          # Each project has a subdirectory
-│       ├── Project Memory/
+│       ├── Memory/
 │       │   ├── ProjectMemory.txt
 │       │   └── TempMemory.txt
 │       ├── Intermediate/
@@ -106,16 +106,39 @@ result = analyzer.analyze_file("intro.txt", section_name="Introduction", paper_n
 Create a new project with the required folder structure:
 
 ```bash
+# Using command-line interface
 python -m utilities.CreateNewProject "MyResearchProject"
+
+# Or directly run the script
+python utilities/CreateNewProject.py "MyResearchProject"
 ```
 
-Or use the class:
+**What it creates:**
+- `projects/MyResearchProject/` - Main project directory
+  - `Memory/` - Stores project-specific memory
+    - `ProjectMemory.txt` - Key ideas, previous content, and outlines
+    - `TempMemory.txt` - Temporary revision feedback
+  - `Intermediate/` - Intermediate files
+    - `AutoWritingHistory.txt` - Writing history log
+    - `TodoHistory.txt` - Todo list history
+  - `Output/` - Output files
+    - `plaintext.txt` - Plain text output
+    - `output.txt` - Final output
+
+**Using the class directly:**
 ```python
 from utilities import CreateNewProject
 
+# Create with default projects directory
 creator = CreateNewProject()
 project_dir = creator.create_project("MyResearchProject")
+
+# Create with custom projects directory
+creator = CreateNewProject(projects_base_dir="custom_projects")
+project_dir = creator.create_project("MyResearchProject")
 ```
+
+**Note:** The script will create the project structure if it doesn't exist, but won't overwrite existing files.
 
 ### 4. Write Using Memory
 
@@ -177,8 +200,8 @@ Edit `global_memory.txt` to set writing heuristics:
 The system uses three levels of memory:
 
 1. **Global Memory** (`global_memory.txt`): Writing heuristics applicable to all papers
-2. **Project Memory** (`projects/[project]/Project Memory/ProjectMemory.txt`): Key ideas, previous content, outlines for a specific paper
-3. **Temp Memory** (`projects/[project]/Project Memory/TempMemory.txt`): Revision feedback for current paragraph
+2. **Project Memory** (`projects/[project]/Memory/ProjectMemory.txt`): Key ideas, previous content, outlines for a specific paper
+3. **Temp Memory** (`projects/[project]/Memory/TempMemory.txt`): Revision feedback for current paragraph
 
 ## Writer Modes
 
@@ -226,8 +249,8 @@ from writer import MemoryManager
 
 mm = MemoryManager()
 global_mem = mm.get_global_memory()
-project_mem = mm.load_project_memory("projects/MyProject/Project Memory/ProjectMemory.txt")
-temp_mem = mm.load_temp_memory("projects/MyProject/Project Memory/TempMemory.txt")
+project_mem = mm.load_project_memory("projects/MyProject/Memory/ProjectMemory.txt")
+temp_mem = mm.load_temp_memory("projects/MyProject/Memory/TempMemory.txt")
 ```
 
 ### Professor
@@ -273,7 +296,7 @@ python unit_tests/run_tests.py
    ```
 
 4. **Edit project memory:**
-   - Edit `projects/MyPaper/Project Memory/ProjectMemory.txt` with key ideas
+   - Edit `projects/MyPaper/Memory/ProjectMemory.txt` with key ideas
 
 5. **Write paragraphs:**
    ```python

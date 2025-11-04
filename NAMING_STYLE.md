@@ -125,8 +125,8 @@ def write_paragraph():
 **Examples:**
 ```python
 output_base_dir = "extracted_sections"
-project_memory_file = "projects/MyProject/Project Memory/ProjectMemory.txt"
-temp_memory_file = "projects/MyProject/Project Memory/TempMemory.txt"
+project_memory_file = "projects/MyProject/Memory/ProjectMemory.txt"
+temp_memory_file = "projects/MyProject/Memory/TempMemory.txt"
 writing_history = []
 ```
 
@@ -199,7 +199,7 @@ from writer.Writer import Writer
 ```
 projects/
 └── [project_name]/
-    ├── Project Memory/     # Kept capitalized (project structure)
+    ├── Memory/     # Kept capitalized (project structure)
     ├── Intermediate/       # Kept capitalized (project structure)
     └── Output/            # Kept capitalized (project structure)
 ```
