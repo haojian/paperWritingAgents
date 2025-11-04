@@ -2,7 +2,7 @@
 Test AI-powered extraction of INTRODUCTION section from citesee.pdf
 """
 
-from agents import PDFSectionExtractorAgent
+from tools import PlainTextExtractor
 import os
 
 def test_citesee_ai_extraction():
@@ -18,12 +18,11 @@ def test_citesee_ai_extraction():
     if not api_key:
         print("\n⚠ No GEMINI_API_KEY found in environment.")
         print("  Set it with: export GEMINI_API_KEY='your_key_here'")
-        print("  Or pass it directly: PDFSectionExtractorAgent(gemini_api_key='your_key')")
+        print("  Or pass it directly: PlainTextExtractor(gemini_api_key='your_key')")
         print("\nContinuing without AI (will use rule-based extraction)...\n")
     
     # Initialize extractor with AI enabled
-    extractor = PDFSectionExtractorAgent(
-        name="PDF Extractor",
+    extractor = PlainTextExtractor(
         gemini_api_key=api_key,
         use_ai=True
     )

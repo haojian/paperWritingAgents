@@ -2,7 +2,7 @@
 Test extraction of INTRODUCTION section from citesee.pdf
 """
 
-from agents import PDFSectionExtractorAgent
+from tools import PlainTextExtractor
 import os
 
 def test_citesee_extraction():
@@ -15,8 +15,7 @@ def test_citesee_extraction():
     # Initialize extractor with AI support
     # Set GEMINI_API_KEY environment variable for AI-powered extraction
     api_key = os.getenv("GEMINI_API_KEY")
-    extractor = PDFSectionExtractorAgent(
-        name="PDF Extractor",
+    extractor = PlainTextExtractor(
         gemini_api_key=api_key,
         use_ai=True  # Enable AI-powered extraction
     )

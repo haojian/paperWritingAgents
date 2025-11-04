@@ -35,7 +35,7 @@ python -m unittest tests.test_student_writer.TestStudentWriterAgent.test_write_s
 - `test_student_writer.py` - Tests for StudentWriterAgent
 - `test_professor_feedback.py` - Tests for ProfessorFeedbackAgent
 - `test_style_analyzer.py` - Tests for StyleAnalyzerAgent
-- `test_pdf_extractor.py` - Tests for PDFSectionExtractorAgent
+- `test_pdf_extractor.py` - Tests for PlainTextExtractor
 - `test_integration.py` - Integration tests for complete workflows
 
 ## Test Requirements

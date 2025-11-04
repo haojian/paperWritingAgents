@@ -118,80 +118,125 @@ class MemoryManager:
         """
         Load single paper memory from project memory file.
         
+        ProjectMemory.txt contains two sections:
+        - Key Ideas: Key ideas for the paper
+        - Previous Content: Previous content from the paper
+        
         Args:
             project_memory_file: Path to ProjectMemory.txt
             
         Returns:
-            Dictionary of project memory sections
+            Dictionary of project memory sections with keys: "Key Ideas", "Previous Content"
         """
         project_memory_file = Path(project_memory_file)
         if not project_memory_file.exists():
             return {
                 "Key Ideas": [],
-                "Previous Content": [],
-                "Outlines": []
+                "Previous Content": []
             }
         
         with open(project_memory_file, 'r', encoding='utf-8') as f:
             content = f.read()
-            return self._parse_memory_file(content)
+            parsed = self._parse_memory_file(content)
+        
+        # Ensure only the two required sections are returned
+        return {
+            "Key Ideas": parsed.get("Key Ideas", []),
+            "Previous Content": parsed.get("Previous Content", [])
+        }
     
     def load_temp_memory(self, temp_memory_file: str) -> Dict[str, List[str]]:
         """
-        Load single paragraph memory from temp memory file (revision feedback).
+        Load single paragraph memory from temp memory file.
+        
+        TempMemory.txt contains four sections:
+        - Topic Sentence: The topic sentence for the paragraph
+        - Bullet Points: Bullet points to expand on
+        - Template Flow: Template describing the logic flow
+        - Current Paragraph: Current paragraph content (for revision)
         
         Args:
             temp_memory_file: Path to TempMemory.txt
             
         Returns:
-            Dictionary of temp memory sections
+            Dictionary of temp memory sections with keys: "Topic Sentence", "Bullet Points", "Template Flow", "Current Paragraph"
         """
         temp_memory_file = Path(temp_memory_file)
         if not temp_memory_file.exists():
-            return {"Revision Feedback": []}
+            return {
+                "Topic Sentence": [],
+                "Bullet Points": [],
+                "Template Flow": [],
+                "Current Paragraph": []
+            }
         
         with open(temp_memory_file, 'r', encoding='utf-8') as f:
             content = f.read()
-            return self._parse_memory_file(content)
+            parsed = self._parse_memory_file(content)
+        
+        # Return the four required sections plus optional Revision Feedback
+        return {
+            "Topic Sentence": parsed.get("Topic Sentence", []),
+            "Bullet Points": parsed.get("Bullet Points", []),
+            "Template Flow": parsed.get("Template Flow", []),
+            "Current Paragraph": parsed.get("Current Paragraph", []),
+            "Revision Feedback": parsed.get("Revision Feedback", [])  # Optional section
+        }
     
     def save_project_memory(self, project_memory_file: str, memory: Dict[str, List[str]]):
         """
         Save project memory to file.
         
+        ProjectMemory.txt contains two sections (in order):
+        - Key Ideas
+        - Previous Content
+        
         Args:
             project_memory_file: Path to ProjectMemory.txt
-            memory: Dictionary of memory sections
+            memory: Dictionary of memory sections with keys: "Key Ideas", "Previous Content"
         """
         project_memory_file = Path(project_memory_file)
         project_memory_file.parent.mkdir(parents=True, exist_ok=True)
         
+        # Define the required sections in order
+        required_sections = ["Key Ideas", "Previous Content"]
+        
         with open(project_memory_file, 'w', encoding='utf-8') as f:
-            for section_name, items in memory.items():
+            for section_name in required_sections:
+                items = memory.get(section_name, [])
                 f.write(f"===== {section_name} =====\n")
-                if items:
-                    f.write("\n")
-                    for item in items:
-                        f.write(f"- {item}\n")
+                f.write("\n")
+                for item in items:
+                    f.write(f"- {item}\n")
                 f.write("\n")
     
     def save_temp_memory(self, temp_memory_file: str, memory: Dict[str, List[str]]):
         """
         Save temp memory to file.
         
+        TempMemory.txt contains four sections (in order):
+        - Topic Sentence
+        - Bullet Points
+        - Template Flow
+        - Current Paragraph
+        
         Args:
             temp_memory_file: Path to TempMemory.txt
-            memory: Dictionary of memory sections
+            memory: Dictionary of memory sections with keys: "Topic Sentence", "Bullet Points", "Template Flow", "Current Paragraph"
         """
         temp_memory_file = Path(temp_memory_file)
         temp_memory_file.parent.mkdir(parents=True, exist_ok=True)
         
+        # Define the required sections in order (Revision Feedback is optional)
+        required_sections = ["Topic Sentence", "Bullet Points", "Template Flow", "Current Paragraph", "Revision Feedback"]
+        
         with open(temp_memory_file, 'w', encoding='utf-8') as f:
-            for section_name, items in memory.items():
+            for section_name in required_sections:
+                items = memory.get(section_name, [])
                 f.write(f"===== {section_name} =====\n")
-                if items:
-                    f.write("\n")
-                    for item in items:
-                        f.write(f"- {item}\n")
+                f.write("\n")
+                for item in items:
+                    f.write(f"- {item}\n")
                 f.write("\n")
     
     def get_all_memory(self, project_memory_file: Optional[str] = None,

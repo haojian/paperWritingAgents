@@ -3,14 +3,14 @@ Test script for PDF Section Extractor Agent
 Tests PDF reading and single section extraction.
 """
 
-from agents import PDFSectionExtractorAgent
+from tools import PlainTextExtractor
 import os
 
 def test_pdf_extractor():
     """Test the PDF section extractor with a sample PDF."""
     
     # Initialize extractor
-    extractor = PDFSectionExtractorAgent(name="PDF Extractor")
+    extractor = PlainTextExtractor()
     
     print("=" * 60)
     print("PDF SECTION EXTRACTOR TEST")
@@ -26,7 +26,7 @@ def test_pdf_extractor():
 pdf_path = "sample_paper.pdf"
 section_title = "Introduction"
 
-extractor = PDFSectionExtractorAgent()
+extractor = PlainTextExtractor()
 section_content = extractor.extract_section(pdf_path, section_title)
 
 print(f"\\nExtracted '{section_title}' section:")
@@ -69,9 +69,20 @@ for section_title in sections_to_extract:
     print("  Example: extractor.extract_section('paper.pdf', 'NonExistentSection')")
     print("  Will raise: ValueError: Section 'NonExistentSection' not found in PDF")
     
-    if not hasattr(extractor, 'PDFPLUMBER_AVAILABLE'):
-        from agents.pdf_section_extractor import PDFPLUMBER_AVAILABLE, PYPDF2_AVAILABLE
-        if not PDFPLUMBER_AVAILABLE and not PYPDF2_AVAILABLE:
+    # Check PDF libraries availability
+    try:
+        import pdfplumber
+        PDFPLUMBER_AVAILABLE = True
+    except ImportError:
+        PDFPLUMBER_AVAILABLE = False
+    
+    try:
+        import PyPDF2
+        PYPDF2_AVAILABLE = True
+    except ImportError:
+        PYPDF2_AVAILABLE = False
+    
+    if not PDFPLUMBER_AVAILABLE and not PYPDF2_AVAILABLE:
             print("\n⚠ Warning: No PDF parsing library installed.")
             print("  Install with: pip install pdfplumber  (recommended)")
             print("  Or: pip install PyPDF2")

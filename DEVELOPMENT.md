@@ -137,8 +137,7 @@ python -m tools.MemoryManager privacypowder --provider openai
 
 ```
 tools/         # Tool modules
-writer/        # Writer modules
-agents/        # Agent modules
+agents/        # Agent modules (Writer, PDFSectionExtractor, etc.)
 unit_tests/    # Unit tests
 ```
 

@@ -2,12 +2,12 @@
 Debug script to see what's in the PDF
 """
 
-from agents import PDFSectionExtractorAgent
+from tools import PlainTextExtractor
 
 def debug_pdf():
     """Debug the PDF to see its structure"""
     
-    extractor = PDFSectionExtractorAgent()
+    extractor = PlainTextExtractor()
     pdf_path = "resources/citesee.pdf"
     
     print("=" * 60)

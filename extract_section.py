@@ -13,7 +13,7 @@ Arguments:
 
 import sys
 import os
-from agents import PDFSectionExtractorAgent
+from tools import PlainTextExtractor
 
 
 def main():
@@ -51,8 +51,7 @@ def main():
         use_ai = True
     
     # Initialize extractor
-    extractor = PDFSectionExtractorAgent(
-        name="PDF Extractor",
+    extractor = PlainTextExtractor(
         gemini_api_key=api_key,
         use_ai=use_ai
     )

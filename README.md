@@ -55,11 +55,8 @@ research_paper_agents/
 │   ├── PaperAnalyzer.py        # Analyze papers and generate templates
 │   ├── ProjectCreator.py       # Create new project structure
 │   └── Professor.py            # Generate to-do lists from global memory
-├── writer/                     # Writer module
-│   ├── MemoryManager.py        # Manages three levels of memory
-│   └── Writer.py               # Manual mode writer
 ├── agents/                     # Agent modules
-│   └── pdf_section_extractor.py
+│   └── Writer.py               # Writer agent with multiple modes
 ├── student_writer.py           # Student Writer Agent
 ├── style_analyzer.py           # Style Analyzer Agent
 ├── professor_feedback.py       # Professor Feedback Agent
@@ -142,13 +139,44 @@ project_dir = creator.create_project("MyResearchProject")
 
 ### 4. Write Using Memory
 
-Write paragraphs using project memory:
+#### NewParagraph Mode
+
+Write new paragraphs using project memory:
 
 ```python
-from writer import Writer
+from agents import Writer
 
 writer = Writer(project_path="projects/MyProject")
-paragraph = writer.write_paragraph(paragraph_template="[brief introduction]...")
+result = writer.new_paragraph()
+# Returns: {'plain_text': ..., 'latex': ...}
+```
+
+#### ReviseParagraph Mode
+
+Revise existing paragraphs based on feedback:
+
+```python
+writer = Writer(project_path="projects/MyProject")
+result = writer.revise_paragraph()
+# Returns: {'plain_text': ..., 'latex': ..., 'version': 1}
+# Saves to WritingHistory.txt with version number
+```
+
+**TempMemory.txt should contain:**
+- Current Paragraph: The paragraph to revise
+- Revision Feedback: Feedback on what needs to be changed
+- Topic Sentence: (Optional) Topic sentence to incorporate
+- Bullet Points: (Optional) Bullet points to expand on
+- Template Flow: (Optional) Template describing the logic flow
+
+#### Using Command Line
+
+```bash
+# NewParagraph mode
+python -m agents.Writer projects/MyProject --mode newparagraph
+
+# ReviseParagraph mode
+python -m agents.Writer projects/MyProject --mode reviseparagraph
 ```
 
 Ask professor for review:
@@ -156,7 +184,7 @@ Ask professor for review:
 todo_list = writer.ask_professor_review()
 ```
 
-Revise based on todo list:
+Revise based on todo list (legacy method):
 ```python
 revised = writer.revise_from_todo()
 ```
@@ -245,7 +273,7 @@ text = ai.generate("Write a paragraph about...")
 Manage three levels of memory:
 
 ```python
-from writer import MemoryManager
+from tools import MemoryManager
 
 mm = MemoryManager()
 global_mem = mm.get_global_memory()
@@ -300,9 +328,15 @@ python unit_tests/run_tests.py
 
 5. **Write paragraphs:**
    ```python
-   from writer import Writer
+   from agents import Writer
    writer = Writer("projects/MyPaper")
-   paragraph = writer.write_paragraph()
+   
+   # NewParagraph mode
+   result = writer.new_paragraph()
+   
+   # Or ReviseParagraph mode (requires Current Paragraph and Revision Feedback in TempMemory.txt)
+   result = writer.revise_paragraph()
+   print(f"Version {result['version']} saved")
    ```
 
 6. **Get feedback:**

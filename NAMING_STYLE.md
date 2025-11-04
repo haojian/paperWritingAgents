@@ -16,7 +16,7 @@ The project follows Python naming conventions (PEP 8) with consistent lowercase-
 ✓ extracted_sections/
 ✓ paper_analysis/
 ✓ projects/
-✓ writer/
+✓ agents/
 ✓ unit_tests/
 ✓ pdfs/
 ```
@@ -62,7 +62,8 @@ The project follows Python naming conventions (PEP 8) with consistent lowercase-
 ```python
 # Module imports
 from tools import PlainTextExtractor
-from writer import MemoryManager
+from tools import MemoryManager
+from agents import Writer
 from tools.CloudAIWrapper import CloudAIWrapper
 ```
 
@@ -181,9 +182,9 @@ self._temp_dir = None
 **Examples:**
 ```python
 from tools import PlainTextExtractor
+from tools import MemoryManager
 from tools.CloudAIWrapper import CloudAIWrapper
-from writer import MemoryManager
-from writer.Writer import Writer
+from agents import Writer
 ```
 
 **Avoid:**
@@ -234,7 +235,7 @@ These are intentional and match the project specification.
 ```python
 # Directory structure
 tools/
-writer/
+agents/
 extracted_sections/
 
 # Class definition

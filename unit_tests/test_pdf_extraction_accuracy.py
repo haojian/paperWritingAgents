@@ -14,7 +14,7 @@ from difflib import SequenceMatcher
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agents import PDFSectionExtractorAgent
+from tools import PlainTextExtractor
 
 
 class TestPDFExtractionAccuracy(unittest.TestCase):
@@ -90,8 +90,7 @@ class TestPDFExtractionAccuracy(unittest.TestCase):
             self.skipTest(f"Expected text file not found: citesee-intro.txt")
         
         # Initialize extractor with AI enabled
-        extractor = PDFSectionExtractorAgent(
-            name="PDF Extractor",
+        extractor = PlainTextExtractor(
             gemini_api_key=self.api_key,
             use_ai=True
         )
