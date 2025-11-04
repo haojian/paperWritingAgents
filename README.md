@@ -2,7 +2,7 @@
 
 A multi-agent system for research paper writing with AI-powered style analysis and PDF section extraction.
 
-> **Note:** See [NAMING_STYLE.md](NAMING_STYLE.md) for naming conventions used in this project.
+> **Note:** See [NAMING_STYLE.md](NAMING_STYLE.md) for naming conventions and [DEVELOPMENT.md](DEVELOPMENT.md) for development instructions.
 
 ## Overview
 
