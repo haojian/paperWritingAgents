@@ -59,6 +59,10 @@ intermediate/*
 *.key
 *_api_key.txt
 
+# Memory files
+globalmemory.txt
+global_memory.txt
+
 # Output files (optional - comment out if you want to track them)
 # latex-final.txt
 # writinghistory.txt

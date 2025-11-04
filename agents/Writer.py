@@ -5,13 +5,14 @@ Uses tools from the tools folder and loads memories from the project folder.
 
 Usage:
     # Command-line interface
-    python -m agents.Writer projects/MyProject --mode newparagraph
-    python -m agents.Writer projects/MyProject --mode reviseparagraph
+    python -m agents.Writer MyProject --mode newparagraph
+    python -m agents.Writer MyProject --mode reviseparagraph
     
     # Programmatic usage
     from agents import Writer
     
-    writer = Writer(project_path="projects/MyProject")
+    writer = Writer(project_path="MyProject")
+    # Note: project_path is relative to the projects/ directory
     
     # NewParagraph mode: Write a new paragraph
     # Requires TempMemory.txt with: Topic Sentence, Bullet Points, Template Flow (optional)
@@ -73,11 +74,16 @@ class Writer:
         Initialize Writer.
         
         Args:
-            project_path: Path to project directory (e.g., "projects/MyProject")
+            project_path: Project name or path relative to projects/ directory (e.g., "MyProject")
+                         If it doesn't start with "projects/", it will be automatically prepended.
             api_provider: "gemini" or "openai" (default: "gemini")
             gemini_api_key: Optional Gemini API key
             openai_api_key: Optional OpenAI API key
         """
+        # Automatically prepend "projects/" if not already present
+        if not project_path.startswith("projects/"):
+            project_path = f"projects/{project_path}"
+        
         self.project_path = Path(project_path)
         self.memory_manager = MemoryManager()
         self.ai_wrapper = CloudAIWrapper(
@@ -536,7 +542,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='Writer with multiple modes for research paper writing'
     )
-    parser.add_argument('project_path', help='Path to project directory')
+    parser.add_argument('project_path', help='Project name (e.g., "MyProject" - will look in projects/ directory)')
     parser.add_argument('--mode', '-m', default='newparagraph',
                        choices=['newparagraph', 'reviseparagraph'],
                        help='Writing mode (default: newparagraph)')
@@ -549,6 +555,7 @@ def main():
     gemini_key = os.getenv("GEMINI_API_KEY") if args.provider == "gemini" else None
     openai_key = os.getenv("OPENAI_API_KEY") if args.provider == "openai" else None
     
+    # project_path will be automatically prepended with "projects/" in Writer.__init__
     writer = Writer(
         project_path=args.project_path,
         api_provider=args.provider,
