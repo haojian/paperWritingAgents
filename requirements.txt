@@ -8,9 +8,11 @@ pdfplumber>=0.10.0  # Preferred PDF text extraction library
 # Google Gen AI SDK for semantic role analysis (required for deep role analysis)
 google-genai>=1.0.0  # Google Gen AI Python SDK - latest API for Gemini
 
+# OpenAI API (optional, for OpenAI provider support)
+openai>=1.0.0  # For GPT-based agents
+
 # Optional: For enhanced functionality, you could add:
 # langchain>=0.0.200  # For advanced LLM integration
-# openai>=1.0.0  # For GPT-based agents
 # anthropic>=0.3.0  # For Claude-based agents
 
 # Note: The system will work without PDF libraries if no reference papers are provided,

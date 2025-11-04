@@ -2,30 +2,15 @@
 
 A multi-agent system for research paper writing with AI-powered style analysis and PDF section extraction.
 
+> **Note:** See [NAMING_STYLE.md](NAMING_STYLE.md) for naming conventions used in this project.
+
 ## Overview
 
-Four specialized agents work together:
-
-1. **Student Writer Agent**: Drafts research paper content
-2. **Style Analyzer Agent**: Analyzes style, structure, and writing quality using AI (Gemini/OpenAI)
-3. **PDF Section Extractor Agent**: Extracts sections from PDF files
-4. **Professor Feedback Agent**: Provides comprehensive academic feedback
-
-## Architecture
-
-```
-Reference Papers → Style Analyzer → Template
-                            ↓
-                    Student Writer → Style Analyzer → Professor Feedback
-```
-
-## Features
-
-- **AI-Powered Semantic Analysis**: Analyzes sentence/paragraph roles, transitions, and generates templates
-- **PDF Section Extraction**: Extracts specific sections from PDFs using AI or rule-based methods
-- **Multi-API Support**: Works with Gemini and OpenAI APIs
-- **Reference Paper Learning**: Style Analyzer learns patterns from reference PDFs to create templates
-- **Comprehensive Feedback**: Detailed style analysis and academic review
+This system provides utilities and agents for:
+1. **Extracting sections** from PDF papers
+2. **Analyzing papers** to generate templates
+3. **Writing papers** using memory-based approach
+4. **Getting feedback** from professor agent
 
 ## Installation
 
@@ -39,215 +24,270 @@ pip install -r requirements.txt
   - Get key: [Google AI Studio](https://makersuite.google.com/app/apikey)
   - Set: `export GEMINI_API_KEY="your_key"`
 - **OpenAI API**: Get key from [OpenAI Platform](https://platform.openai.com/api-keys)
-
-## Quick Start
-
-### Basic Usage
-
-```python
-from main import PaperWritingCoordinator
-
-coordinator = PaperWritingCoordinator()
-results = coordinator.write_and_review_paper(
-    topic="Machine Learning Applications in Healthcare",
-    sections=["Introduction", "Methodology", "Results", "Discussion", "Conclusion"],
-    requirements={"length": "medium"},
-    num_iterations=1
-)
-coordinator.print_detailed_report(results)
-```
-
-### With Reference Papers & AI
-
-```python
-from main import PaperWritingCoordinator
-import os
-
-coordinator = PaperWritingCoordinator(
-    reference_papers=["paper1.pdf", "paper2.pdf"],
-    gemini_api_key=os.getenv("GEMINI_API_KEY")
-)
-
-results = coordinator.write_and_review_paper(
-    topic="Your Topic",
-    sections=["Introduction", "Methodology", "Results"],
-    num_iterations=1
-)
-```
-
-### PDF Section Extraction
-
-**Standalone Script:**
-```bash
-export GEMINI_API_KEY="your_key"
-python extract_section.py "paper.pdf" "INTRODUCTION"
-python extract_section.py "paper.pdf" "Introduction" "output.txt"  # Save to file
-```
-
-**Workflow: Extract section → Generate template:**
-```bash
-# Step 1: Extract section from PDF
-python extract_section.py "paper.pdf" "INTRODUCTION" "intro.txt"
-
-# Step 2: Analyze text file and generate template
-python analyze_and_generate_template.py "intro.txt" "template.txt"
-python analyze_and_generate_template.py "intro.txt" "template.txt" "Introduction"  # With section name
-```
-
-**Python API:**
-```python
-from agents import PDFSectionExtractorAgent
-import os
-
-extractor = PDFSectionExtractorAgent(
-    gemini_api_key=os.getenv("GEMINI_API_KEY"),
-    use_ai=True  # Use AI for better accuracy
-)
-
-content = extractor.extract_section("paper.pdf", "Introduction")
-```
-
-**Note:** The three main agents (`StudentWriterAgent`, `StyleAnalyzerAgent`, `ProfessorFeedbackAgent`) are now top-level modules. You can import them directly:
-```python
-from student_writer import StudentWriterAgent
-from style_analyzer import StyleAnalyzerAgent
-from professor_feedback import ProfessorFeedbackAgent
-```
-
-Or for backward compatibility:
-```python
-from agents import StudentWriterAgent, StyleAnalyzerAgent, ProfessorFeedbackAgent
-```
-
-## API Reference
-
-### Style Analyzer Agent
-
-**Analyze text directly:**
-```python
-from style_analyzer import StyleAnalyzerAgent
-
-analyzer = StyleAnalyzerAgent(
-    api_provider="gemini",  # or "openai"
-    gemini_api_key="your_key"
-)
-
-analysis = analyzer.analyze_section(section_text, section_name="Introduction")
-# Returns: sentences, transitions, template, semantic_structure
-```
-
-**Analyze file and generate template file:**
-```python
-from style_analyzer import StyleAnalyzerAgent
-import os
-
-analyzer = StyleAnalyzerAgent(
-    api_provider="gemini",
-    gemini_api_key=os.getenv("GEMINI_API_KEY")
-)
-
-# Analyze a text file and save template to output file
-result = analyzer.analyze_file_and_generate_template(
-    input_file_path="input/citesee-intro.txt",
-    output_file_path="output/template.txt",
-    section_name="Introduction"  # Optional: will infer from filename
-)
-
-# Template is saved to output_file_path
-# Result contains: sentences, transitions, template, semantic_structure
-```
-
-### PDF Section Extractor Agent
-
-```python
-from agents import PDFSectionExtractorAgent
-
-extractor = PDFSectionExtractorAgent(use_ai=True, gemini_api_key="your_key")
-content = extractor.extract_section(pdf_path, section_title)
-```
-
-**Supported formats**: "Introduction", "1. Introduction", "INTRODUCTION", "# Introduction"
-
-### Other Agents
-
-```python
-from student_writer import StudentWriterAgent
-from professor_feedback import ProfessorFeedbackAgent
-
-writer = StudentWriterAgent()
-content = writer.write_section("Introduction", "Topic")
-
-professor = ProfessorFeedbackAgent(expertise="Computer Science")
-feedback = professor.review_section("Introduction", content, "Topic")
-```
-
-## Running Examples
-
-```bash
-# Main paper writing system
-python main.py
-
-# Extract PDF section
-python extract_section.py "resources/citesee.pdf" "INTRODUCTION"
-```
-
-## Output
-
-The system generates:
-- Paper content with all sections
-- Style analysis (quality scores, metrics, issues, templates)
-- Semantic role analysis (sentence/paragraph roles, transitions)
-- Template compliance scores (when using reference papers)
-- Professor feedback (assessment, grade estimate, suggestions)
+  - Set: `export OPENAI_API_KEY="your_key"`
 
 ## File Structure
 
 ```
 research_paper_agents/
-├── student_writer.py          # Student Writer Agent (top-level)
-├── style_analyzer.py          # Style Analyzer Agent (top-level)
-├── professor_feedback.py     # Professor Feedback Agent (top-level)
-├── agents/
-│   ├── __init__.py
+├── pdfs/                        # Example paper PDF files
+├── extracted_sections/          # Extracted section text files
+│   └── [paper_name]/            # Each paper has a subdirectory
+│       ├── 1_abstract.txt
+│       ├── 2_introduction.txt
+│       └── ...
+├── paper_analysis/              # Paper annotation files
+├── projects/                    # Project data
+│   └── [project_name]/          # Each project has a subdirectory
+│       ├── Project Memory/
+│       │   ├── ProjectMemory.txt
+│       │   └── TempMemory.txt
+│       ├── Intermediate/
+│       │   ├── AutoWritingHistory.txt
+│       │   └── TodoHistory.txt
+│       └── Output/
+│           ├── plaintext.txt
+│           └── output.txt
+├── global_memory.txt            # Global memory file (writing heuristics)
+├── utilities/                   # Utility modules
+│   ├── CloudAIWrapper.py       # Unified AI wrapper (Gemini/OpenAI)
+│   ├── ExtractSections.py      # Extract all sections from PDF
+│   ├── PaperAnalyzer.py        # Analyze papers and generate templates
+│   ├── CreateNewProject.py     # Create new project structure
+│   └── Professor.py            # Generate to-do lists from global memory
+├── writer/                     # Writer module
+│   ├── MemoryManager.py        # Manages three levels of memory
+│   └── Writer.py               # Manual mode writer
+├── agents/                     # Agent modules
 │   └── pdf_section_extractor.py
-├── tests/                     # Unit tests
-│   ├── __init__.py
-│   ├── run_tests.py          # Test runner
-│   ├── test_student_writer.py
-│   ├── test_professor_feedback.py
-│   ├── test_style_analyzer.py
-│   ├── test_pdf_extractor.py
-│   └── test_integration.py
-├── input/                     # Input resource folder
-├── output/                    # Output resource folder
-├── intermediate/              # Intermediate resource folder
-├── resources/                 # PDF resources
-├── main.py
-├── extract_section.py
-├── analyze_and_generate_template.py
-├── write_from_template.py
-├── generate_feedback.py
-├── revise_from_todo.py
-├── requirements.txt
+├── student_writer.py           # Student Writer Agent
+├── style_analyzer.py           # Style Analyzer Agent
+├── professor_feedback.py       # Professor Feedback Agent
+├── unit_tests/                 # Unit tests
 └── README.md
 ```
 
-## How Style Analyzer Learns from Reference Papers
+## Usage
 
-1. Extracts text from PDF files
-2. Analyzes writing patterns:
-   - Sentence/paragraph semantic roles
-   - Transition relationships
-   - Structure and organization
-3. Develops templates:
-   - Role-based section templates
-   - Expected role sequences
-   - Role distribution patterns
-4. Uses template for analysis:
-   - Compares new papers against learned patterns
-   - Identifies missing expected roles
-   - Provides compliance scores and recommendations
+### 1. Extract Sections from PDF
 
-## License
+Extract all sections from a PDF file and save them as text files:
 
-Open source for educational use.
+```bash
+python -m utilities.ExtractSections paper.pdf --paper-name "MyPaper"
+```
+
+Or use the class directly:
+```python
+from utilities import ExtractSections
+
+extractor = ExtractSections()
+extractor.extract_all_sections("paper.pdf", paper_name="MyPaper")
+```
+
+### 2. Analyze Paper and Generate Templates
+
+Analyze a text file and generate template annotations:
+
+```bash
+python -m utilities.PaperAnalyzer intro.txt --section-name "Introduction" --paper-name "MyPaper"
+```
+
+Or use the class:
+```python
+from utilities import PaperAnalyzer
+
+analyzer = PaperAnalyzer()
+result = analyzer.analyze_file("intro.txt", section_name="Introduction", paper_name="MyPaper")
+```
+
+### 3. Create New Project
+
+Create a new project with the required folder structure:
+
+```bash
+python -m utilities.CreateNewProject "MyResearchProject"
+```
+
+Or use the class:
+```python
+from utilities import CreateNewProject
+
+creator = CreateNewProject()
+project_dir = creator.create_project("MyResearchProject")
+```
+
+### 4. Write Using Memory
+
+Write paragraphs using project memory:
+
+```python
+from writer import Writer
+
+writer = Writer(project_path="projects/MyProject")
+paragraph = writer.write_paragraph(paragraph_template="[brief introduction]...")
+```
+
+Ask professor for review:
+```python
+todo_list = writer.ask_professor_review()
+```
+
+Revise based on todo list:
+```python
+revised = writer.revise_from_todo()
+```
+
+### 5. Memory Format
+
+Memory files use human-readable bullet format:
+
+```
+===== Key Ideas =====
+• Main idea 1
+• Main idea 2
+
+===== Previous Content =====
+• Previous paragraph content
+
+===== Outlines =====
+• Outline point 1
+• Outline point 2
+
+===== Revision Feedback =====
+• Improve clarity
+• Add more details
+```
+
+### 6. Global Memory
+
+Edit `global_memory.txt` to set writing heuristics:
+
+```
+===== Writing Heuristics =====
+• Clarity: Ensure ideas are clearly expressed
+• Structure: Follow logical flow
+• Academic Tone: Maintain formal academic style
+• Evidence: Support claims with evidence
+• Coherence: Ensure smooth transitions
+```
+
+## Memory Levels
+
+The system uses three levels of memory:
+
+1. **Global Memory** (`global_memory.txt`): Writing heuristics applicable to all papers
+2. **Project Memory** (`projects/[project]/Project Memory/ProjectMemory.txt`): Key ideas, previous content, outlines for a specific paper
+3. **Temp Memory** (`projects/[project]/Project Memory/TempMemory.txt`): Revision feedback for current paragraph
+
+## Writer Modes
+
+### Paragraph Writing Mode
+
+The Writer supports paragraph-writing mode where:
+- Input: Project memory, paragraph templates (optional), TempMemory.txt (revision feedback)
+- Output: Generated paragraph text
+- Can ask professor to review and get todo list
+- Can revise based on todo list
+
+Example:
+```python
+writer = Writer(project_path="projects/MyProject")
+
+# Write with template
+paragraph = writer.write_paragraph(paragraph_template="[brief introduction]...")
+
+# Get review
+todo_list = writer.ask_professor_review()
+
+# Revise
+revised = writer.revise_from_todo()
+```
+
+## API Reference
+
+### CloudAIWrapper
+
+Unified wrapper for Gemini and OpenAI:
+
+```python
+from utilities import CloudAIWrapper
+
+ai = CloudAIWrapper(provider="gemini")  # or "openai"
+text = ai.generate("Write a paragraph about...")
+```
+
+### MemoryManager
+
+Manage three levels of memory:
+
+```python
+from writer import MemoryManager
+
+mm = MemoryManager()
+global_mem = mm.get_global_memory()
+project_mem = mm.load_project_memory("projects/MyProject/Project Memory/ProjectMemory.txt")
+temp_mem = mm.load_temp_memory("projects/MyProject/Project Memory/TempMemory.txt")
+```
+
+### Professor
+
+Generate to-do lists from global memory:
+
+```python
+from utilities import Professor
+
+prof = Professor()
+todo_list = prof.generate_todo_list("writing_history.txt")
+```
+
+## Testing
+
+Run unit tests:
+
+```bash
+python -m unittest discover -s unit_tests -p "test_*.py" -v
+```
+
+Or use the test runner:
+
+```bash
+python unit_tests/run_tests.py
+```
+
+## Workflow Example
+
+1. **Extract sections from PDF:**
+   ```bash
+   python -m utilities.ExtractSections paper.pdf --paper-name "ExamplePaper"
+   ```
+
+2. **Analyze extracted introduction:**
+   ```bash
+   python -m utilities.PaperAnalyzer extracted_sections/ExamplePaper/2_introduction.txt --section-name "Introduction"
+   ```
+
+3. **Create a new project:**
+   ```bash
+   python -m utilities.CreateNewProject "MyPaper"
+   ```
+
+4. **Edit project memory:**
+   - Edit `projects/MyPaper/Project Memory/ProjectMemory.txt` with key ideas
+
+5. **Write paragraphs:**
+   ```python
+   from writer import Writer
+   writer = Writer("projects/MyPaper")
+   paragraph = writer.write_paragraph()
+   ```
+
+6. **Get feedback:**
+   ```python
+   todo_list = writer.ask_professor_review()
+   ```
+
+7. **Revise:**
+   ```python
+   revised = writer.revise_from_todo()
+   ```

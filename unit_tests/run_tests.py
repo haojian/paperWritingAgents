@@ -3,9 +3,8 @@
 Test runner for Research Paper Writing Agents unit tests
 
 Usage:
-    python unittest/run_tests.py              # Run all tests
-    python unittest/run_tests.py TestStudentWriterAgent  # Run specific test class
-    python unittest/run_tests.py TestStudentWriterAgent.test_write_from_files  # Run specific test
+    python unit_tests/run_tests.py              # Run all tests
+    python -m unittest discover -s unit_tests -p "test_*.py" -v  # Using unittest directly
 """
 
 import sys
