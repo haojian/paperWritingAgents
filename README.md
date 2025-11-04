@@ -6,7 +6,7 @@ A multi-agent system for research paper writing with AI-powered style analysis a
 
 ## Overview
 
-This system provides utilities and agents for:
+This system provides tools and agents for:
 1. **Extracting sections** from PDF papers
 2. **Analyzing papers** to generate templates
 3. **Writing papers** using memory-based approach
@@ -49,11 +49,11 @@ research_paper_agents/
 │           ├── plaintext.txt
 │           └── output.txt
 ├── global_memory.txt            # Global memory file (writing heuristics)
-├── utilities/                   # Utility modules
+├── tools/                       # Tool modules
 │   ├── CloudAIWrapper.py       # Unified AI wrapper (Gemini/OpenAI)
-│   ├── ExtractSections.py      # Extract all sections from PDF
+│   ├── PlainTextExtractor.py   # Extract all sections from PDF
 │   ├── PaperAnalyzer.py        # Analyze papers and generate templates
-│   ├── CreateNewProject.py     # Create new project structure
+│   ├── ProjectCreator.py       # Create new project structure
 │   └── Professor.py            # Generate to-do lists from global memory
 ├── writer/                     # Writer module
 │   ├── MemoryManager.py        # Manages three levels of memory
@@ -74,14 +74,14 @@ research_paper_agents/
 Extract all sections from a PDF file and save them as text files:
 
 ```bash
-python -m utilities.ExtractSections paper.pdf --paper-name "MyPaper"
+python -m tools.PlainTextExtractor paper.pdf --paper-name "MyPaper"
 ```
 
 Or use the class directly:
 ```python
-from utilities import ExtractSections
+from tools import PlainTextExtractor
 
-extractor = ExtractSections()
+extractor = PlainTextExtractor()
 extractor.extract_all_sections("paper.pdf", paper_name="MyPaper")
 ```
 
@@ -90,12 +90,12 @@ extractor.extract_all_sections("paper.pdf", paper_name="MyPaper")
 Analyze a text file and generate template annotations:
 
 ```bash
-python -m utilities.PaperAnalyzer intro.txt --section-name "Introduction" --paper-name "MyPaper"
+python -m tools.PaperAnalyzer intro.txt --section-name "Introduction" --paper-name "MyPaper"
 ```
 
 Or use the class:
 ```python
-from utilities import PaperAnalyzer
+from tools import PaperAnalyzer
 
 analyzer = PaperAnalyzer()
 result = analyzer.analyze_file("intro.txt", section_name="Introduction", paper_name="MyPaper")
@@ -107,10 +107,10 @@ Create a new project with the required folder structure:
 
 ```bash
 # Using command-line interface
-python -m utilities.CreateNewProject "MyResearchProject"
+python -m tools.ProjectCreator "MyResearchProject"
 
 # Or directly run the script
-python utilities/CreateNewProject.py "MyResearchProject"
+python tools/ProjectCreator.py "MyResearchProject"
 ```
 
 **What it creates:**
@@ -127,14 +127,14 @@ python utilities/CreateNewProject.py "MyResearchProject"
 
 **Using the class directly:**
 ```python
-from utilities import CreateNewProject
+from tools import ProjectCreator
 
 # Create with default projects directory
-creator = CreateNewProject()
+creator = ProjectCreator()
 project_dir = creator.create_project("MyResearchProject")
 
 # Create with custom projects directory
-creator = CreateNewProject(projects_base_dir="custom_projects")
+creator = ProjectCreator(projects_base_dir="custom_projects")
 project_dir = creator.create_project("MyResearchProject")
 ```
 
@@ -234,7 +234,7 @@ revised = writer.revise_from_todo()
 Unified wrapper for Gemini and OpenAI:
 
 ```python
-from utilities import CloudAIWrapper
+from tools import CloudAIWrapper
 
 ai = CloudAIWrapper(provider="gemini")  # or "openai"
 text = ai.generate("Write a paragraph about...")
@@ -258,7 +258,7 @@ temp_mem = mm.load_temp_memory("projects/MyProject/Memory/TempMemory.txt")
 Generate to-do lists from global memory:
 
 ```python
-from utilities import Professor
+from tools import Professor
 
 prof = Professor()
 todo_list = prof.generate_todo_list("writing_history.txt")
@@ -282,17 +282,17 @@ python unit_tests/run_tests.py
 
 1. **Extract sections from PDF:**
    ```bash
-   python -m utilities.ExtractSections paper.pdf --paper-name "ExamplePaper"
+   python -m tools.PlainTextExtractor paper.pdf --paper-name "ExamplePaper"
    ```
 
 2. **Analyze extracted introduction:**
    ```bash
-   python -m utilities.PaperAnalyzer extracted_sections/ExamplePaper/2_introduction.txt --section-name "Introduction"
+   python -m tools.PaperAnalyzer extracted_sections/ExamplePaper/2_introduction.txt --section-name "Introduction"
    ```
 
 3. **Create a new project:**
    ```bash
-   python -m utilities.CreateNewProject "MyPaper"
+   python -m tools.ProjectCreator "MyPaper"
    ```
 
 4. **Edit project memory:**

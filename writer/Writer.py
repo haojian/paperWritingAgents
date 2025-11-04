@@ -9,8 +9,8 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, List
 from .MemoryManager import MemoryManager
-from utilities.CloudAIWrapper import CloudAIWrapper
-from utilities.Professor import Professor
+from tools.CloudAIWrapper import CloudAIWrapper
+from tools.Professor import Professor
 from student_writer import StudentWriterAgent
 
 

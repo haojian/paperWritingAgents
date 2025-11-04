@@ -12,7 +12,7 @@ The project follows Python naming conventions (PEP 8) with consistent lowercase-
 
 **Examples:**
 ```
-✓ utilities/
+✓ tools/
 ✓ extracted_sections/
 ✓ paper_analysis/
 ✓ projects/
@@ -49,7 +49,7 @@ The project follows Python naming conventions (PEP 8) with consistent lowercase-
 
 **Avoid:**
 ```
-✗ ExtractSections.py
+✗ PlainTextExtractor.py
 ✗ MemoryManager.py
 ✗ CloudAIWrapper.py
 ```
@@ -61,9 +61,9 @@ The project follows Python naming conventions (PEP 8) with consistent lowercase-
 **Examples:**
 ```python
 # Module imports
-from utilities import ExtractSections
+from tools import PlainTextExtractor
 from writer import MemoryManager
-from utilities.CloudAIWrapper import CloudAIWrapper
+from tools.CloudAIWrapper import CloudAIWrapper
 ```
 
 ## Class Names
@@ -72,7 +72,7 @@ from utilities.CloudAIWrapper import CloudAIWrapper
 
 **Examples:**
 ```python
-class ExtractSections:
+class PlainTextExtractor:
     pass
 
 class MemoryManager:
@@ -180,15 +180,15 @@ self._temp_dir = None
 
 **Examples:**
 ```python
-from utilities import ExtractSections
-from utilities.CloudAIWrapper import CloudAIWrapper
+from tools import PlainTextExtractor
+from tools.CloudAIWrapper import CloudAIWrapper
 from writer import MemoryManager
 from writer.Writer import Writer
 ```
 
 **Avoid:**
 ```
-✗ from Utilities import ExtractSections
+✗ from Tools import PlainTextExtractor
 ✗ from Writer import MemoryManager
 ```
 
@@ -210,10 +210,10 @@ These are intentional and match the project specification.
 
 | Item | Convention | Example |
 |------|-----------|---------|
-| Directory names | `lowercase_with_underscores` | `utilities/`, `extracted_sections/` |
+| Directory names | `lowercase_with_underscores` | `tools/`, `extracted_sections/` |
 | File names | `lowercase_with_underscores` | `extract_sections.py`, `memory_manager.py` |
-| Module names | `lowercase_with_underscores` | `utilities`, `writer` |
-| Class names | `PascalCase` | `ExtractSections`, `MemoryManager` |
+| Module names | `lowercase_with_underscores` | `tools`, `writer` |
+| Class names | `PascalCase` | `PlainTextExtractor`, `MemoryManager` |
 | Method/Function names | `lowercase_with_underscores` | `extract_all_sections()`, `load_project_memory()` |
 | Variable names | `lowercase_with_underscores` | `output_base_dir`, `project_memory_file` |
 | Constants | `UPPERCASE_WITH_UNDERSCORES` | `GEMINI_AVAILABLE`, `MAX_TEXT_LENGTH` |
@@ -225,7 +225,7 @@ These are intentional and match the project specification.
 2. **Be descriptive:** Names should clearly indicate their purpose.
 3. **Avoid abbreviations:** Use full words when possible (e.g., `extract_sections` not `ext_sec`).
 4. **Use verbs for functions:** Function names should be verbs (e.g., `extract`, `load`, `generate`).
-5. **Use nouns for classes:** Class names should be nouns (e.g., `ExtractSections`, `MemoryManager`).
+5. **Use nouns for classes:** Class names should be nouns (e.g., `PlainTextExtractor`, `MemoryManager`).
 
 ## Examples from the Codebase
 
@@ -233,12 +233,12 @@ These are intentional and match the project specification.
 
 ```python
 # Directory structure
-utilities/
+tools/
 writer/
 extracted_sections/
 
 # Class definition
-class ExtractSections:
+class PlainTextExtractor:
     def __init__(self, output_base_dir: str = "extracted_sections"):
         self.output_base_dir = Path(output_base_dir)
     

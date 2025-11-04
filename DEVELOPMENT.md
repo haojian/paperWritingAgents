@@ -100,16 +100,43 @@ export OPENAI_API_KEY="your_key"
 See [NAMING_STYLE.md](NAMING_STYLE.md) for naming conventions.
 
 **Quick reference:**
-- Directories: `lowercase_with_underscores` (e.g., `utilities/`)
+- Directories: `lowercase_with_underscores` (e.g., `tools/`)
 - Files: `lowercase_with_underscores.py` (e.g., `extract_sections.py`)
-- Classes: `PascalCase` (e.g., `ExtractSections`)
+- Classes: `PascalCase` (e.g., `PlainTextExtractor`)
 - Functions: `lowercase_with_underscores()` (e.g., `extract_all_sections()`)
 - Variables: `lowercase_with_underscores` (e.g., `output_base_dir`)
+
+## Updating Project Memory
+
+### Update Memory from StagedOutput.txt
+
+Summarize the content in `StagedOutput.txt` and update the "Previous Content" section in `ProjectMemory.txt`:
+
+```bash
+# Update memory for a project (using project name)
+python -m tools.MemoryManager privacypowder
+
+# Or using direct file call
+python tools/MemoryManager.py privacypowder
+
+# Or using full path
+python -m tools.MemoryManager projects/privacypowder
+
+# Specify AI provider
+python -m tools.MemoryManager privacypowder --provider gemini
+python -m tools.MemoryManager privacypowder --provider openai
+```
+
+**What it does:**
+- Reads `projects/<project>/Output/StagedOutput.txt`
+- Uses AI to extract 10 diverse, important sentences
+- Updates `projects/<project>/Memory/ProjectMemory.txt` "Previous Content" section
+- Requires `GEMINI_API_KEY` or `OPENAI_API_KEY` environment variable
 
 ## Project Structure
 
 ```
-utilities/     # Utility modules
+tools/         # Tool modules
 writer/        # Writer modules
 agents/        # Agent modules
 unit_tests/    # Unit tests
