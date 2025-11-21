@@ -1,0 +1,5 @@
+======== Writing Heuristics ======== 
+1. The writings should be ground in new knowledge contributions. Avoid redundancy. Don't repeat. It's for scientific research. No bullshit. So avoid sales pitch without concrete evidence. 
+2. Follow the styles in book "The Elements of Style". For example, avoid passive tense as much as possible. 
+3. Have the contributions in the bullet points.  Also state explicitly, we contributes blabla.
+4. Write the system design in the present tense, but write all the experiments in the past tense.

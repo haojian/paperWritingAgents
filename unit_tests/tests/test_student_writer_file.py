@@ -45,7 +45,7 @@ def main():
     
     if not os.path.exists(template_file):
         print(f"Error: Template file not found: {template_file}")
-        print("  Generate a template first using analyze_and_generate_template.py")
+        print("  Generate a template first using: python -m tools.PaperAnalyzer <input_file> --section-name <name>")
         return
     
     print(f"\nGenerating text from:")

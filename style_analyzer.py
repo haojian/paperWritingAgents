@@ -1,7 +1,4 @@
 """
-
-example: python analyze_and_generate_template.py "citesee-intro.txt" "template.txt"
-
 Style Analyzer Agent
 Analyzes research paper sections for semantic roles, transitions, and structure.
 Generates semi-structured templates based on AI-powered semantic analysis.

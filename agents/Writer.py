@@ -32,11 +32,13 @@ Memory Files:
         - Previous Content: Previous content from the paper
     
     TempMemory.txt (in Memory/ folder):
+        - Writing Context: The task/context for writing (at the top)
         - Topic Sentence: Topic sentence for the paragraph
         - Bullet Points: Bullet points to expand on
         - Template Flow: Template describing the logic flow
         - Current Paragraph: Current paragraph content (for revision)
         - Revision Feedback: Feedback on what needs to be changed (for revision)
+        - Output: The resulting paragraph (at the bottom, written by the writer)
 
 Output Files:
     - WritingHistory.txt: Plain text history of all writing (with version numbers for revisions)
@@ -111,27 +113,30 @@ class Writer:
         """
         NewParagraph mode: Write a new paragraph based on input from TempMemory.txt.
         
-        Reads from TempMemory.txt which contains four sections:
+        Reads from TempMemory.txt which contains:
+        - Writing Context: The task/context for writing
         - Topic Sentence: The topic sentence for the paragraph
         - Bullet Points: Bullet points to expand on
-        - Template Flow: Template describing the logic flow
-        - Current Paragraph: Current paragraph content (for revision)
+        - Template Flow: Template describing the logic flow (optional)
         
         Outputs:
         - Plain text to WritingHistory.txt
         - LaTeX to Output/Latex.txt
+        - Resulting paragraph to TempMemory.txt Output section
         
         Returns:
             Dictionary with 'plain_text' and 'latex' keys containing the generated text
         """
-        # Load memory from TempMemory.txt (same format as ProjectMemory.txt)
+        # Load memory from TempMemory.txt
         temp_memory = self.memory_manager.load_temp_memory(str(self.temp_memory_file))
         
         # Load project memory for context
         project_memory = self.memory_manager.load_project_memory(str(self.project_memory_file))
         
         # Extract components from TempMemory
-        # TempMemory has four sections: Topic Sentence, Bullet Points, Template Flow, Current Paragraph
+        writing_context_items = temp_memory.get("Writing Context", [])
+        writing_context = "\n".join(writing_context_items) if writing_context_items else None
+        
         topic_sentence_items = temp_memory.get("Topic Sentence", [])
         topic_sentence = topic_sentence_items[0] if topic_sentence_items else None
         
@@ -140,15 +145,19 @@ class Writer:
         template_flow_items = temp_memory.get("Template Flow", [])
         template = "\n".join(template_flow_items) if template_flow_items else None
         
-        current_paragraph_items = temp_memory.get("Current Paragraph", [])
-        current_paragraph = "\n".join(current_paragraph_items) if current_paragraph_items else None
-        
         # Get key ideas from project memory for context
         project_key_ideas = project_memory.get("Key Ideas", [])
         project_previous_content = project_memory.get("Previous Content", [])
         
         # Build prompt
         prompt = """Write a well-structured research paper paragraph based on the following information:
+
+"""
+        
+        # Add Writing Context at the top if provided
+        if writing_context:
+            prompt += f"""===== Writing Context =====
+{writing_context}
 
 """
         
@@ -216,6 +225,9 @@ Ensure the revised paragraph:
         self._append_to_history(plain_text)
         self._save_latex(latex_text)
         
+        # Save output to TempMemory.txt Output section
+        self._save_output_to_temp_memory(plain_text)
+        
         return {
             'plain_text': plain_text,
             'latex': latex_text
@@ -226,6 +238,7 @@ Ensure the revised paragraph:
         ReviseParagraph mode: Revise an existing paragraph based on revision feedback and input from TempMemory.txt.
         
         Reads from TempMemory.txt which contains:
+        - Writing Context: The task/context for writing
         - Current Paragraph: The current paragraph to revise
         - Revision Feedback: Feedback on what needs to be changed
         - Topic Sentence: (Optional) Topic sentence to incorporate
@@ -235,6 +248,7 @@ Ensure the revised paragraph:
         Outputs:
         - Plain text to WritingHistory.txt with version number
         - LaTeX to Output/Latex.txt
+        - Revised paragraph to TempMemory.txt Output section
         
         Returns:
             Dictionary with 'plain_text', 'latex', and 'version' keys
@@ -246,6 +260,9 @@ Ensure the revised paragraph:
         project_memory = self.memory_manager.load_project_memory(str(self.project_memory_file))
         
         # Extract components from TempMemory
+        writing_context_items = temp_memory.get("Writing Context", [])
+        writing_context = "\n".join(writing_context_items) if writing_context_items else None
+        
         current_paragraph_items = temp_memory.get("Current Paragraph", [])
         current_paragraph = "\n".join(current_paragraph_items) if current_paragraph_items else None
         
@@ -274,16 +291,22 @@ Ensure the revised paragraph:
         # Build revision prompt
         prompt = """Revise the following paragraph based on the revision feedback and requirements provided below.
 
-===== Current Paragraph =====
+"""
+        
+        # Add Writing Context at the top if provided
+        if writing_context:
+            prompt += f"""===== Writing Context =====
+{writing_context}
+
+"""
+        
+        prompt += f"""===== Current Paragraph =====
 {current_paragraph}
 
 ===== Revision Feedback =====
 {revision_feedback}
 
-""".format(
-            current_paragraph=current_paragraph,
-            revision_feedback=revision_feedback
-        )
+"""
         
         if project_key_ideas:
             prompt += "===== Project Context: Key Ideas =====\n"
@@ -334,6 +357,9 @@ Ensure the revised paragraph:
         # Save to files with version number
         version = self._append_to_history_with_version(plain_text, mode="ReviseParagraph")
         self._save_latex(latex_text)
+        
+        # Save output to TempMemory.txt Output section
+        self._save_output_to_temp_memory(plain_text)
         
         return {
             'plain_text': plain_text,
@@ -522,7 +548,24 @@ Please revise the writing to address all items in the todo list.
         # Overwrite with latest plain text output
         with open(self.output_plaintext, 'w', encoding='utf-8') as f:
             f.write(text)
-            f.write("\n")
+    
+    def _save_output_to_temp_memory(self, output_text: str):
+        """
+        Save the resulting paragraph to TempMemory.txt Output section.
+        
+        Args:
+            output_text: The paragraph text to save
+        """
+        # Load current temp memory
+        temp_memory = self.memory_manager.load_temp_memory(str(self.temp_memory_file))
+        
+        # Update the Output section with the new paragraph
+        # Split the text into lines and store as list items
+        output_lines = [line.strip() for line in output_text.strip().split('\n') if line.strip()]
+        temp_memory["Output"] = output_lines
+        
+        # Save back to file
+        self.memory_manager.save_temp_memory(str(self.temp_memory_file), temp_memory)
     
     def _save_output(self, text: str):
         """Save text to output files (legacy method for backward compatibility)."""

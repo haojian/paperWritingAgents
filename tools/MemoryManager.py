@@ -149,38 +149,47 @@ class MemoryManager:
         """
         Load single paragraph memory from temp memory file.
         
-        TempMemory.txt contains four sections:
+        TempMemory.txt contains the following sections (in order):
+        - Writing Context: The task/context for writing (at the top)
         - Topic Sentence: The topic sentence for the paragraph
         - Bullet Points: Bullet points to expand on
         - Template Flow: Template describing the logic flow
         - Current Paragraph: Current paragraph content (for revision)
+        - Revision Feedback: Feedback on what needs to be changed (for revision)
+        - Output: The resulting paragraph (at the bottom)
         
         Args:
             temp_memory_file: Path to TempMemory.txt
             
         Returns:
-            Dictionary of temp memory sections with keys: "Topic Sentence", "Bullet Points", "Template Flow", "Current Paragraph"
+            Dictionary of temp memory sections with keys: "Writing Context", "Topic Sentence", "Bullet Points", 
+            "Template Flow", "Current Paragraph", "Revision Feedback", "Output"
         """
         temp_memory_file = Path(temp_memory_file)
         if not temp_memory_file.exists():
             return {
+                "Writing Context": [],
                 "Topic Sentence": [],
                 "Bullet Points": [],
                 "Template Flow": [],
-                "Current Paragraph": []
+                "Current Paragraph": [],
+                "Revision Feedback": [],
+                "Output": []
             }
         
         with open(temp_memory_file, 'r', encoding='utf-8') as f:
             content = f.read()
             parsed = self._parse_memory_file(content)
         
-        # Return the four required sections plus optional Revision Feedback
+        # Return all sections
         return {
+            "Writing Context": parsed.get("Writing Context", []),
             "Topic Sentence": parsed.get("Topic Sentence", []),
             "Bullet Points": parsed.get("Bullet Points", []),
             "Template Flow": parsed.get("Template Flow", []),
             "Current Paragraph": parsed.get("Current Paragraph", []),
-            "Revision Feedback": parsed.get("Revision Feedback", [])  # Optional section
+            "Revision Feedback": parsed.get("Revision Feedback", []),
+            "Output": parsed.get("Output", [])
         }
     
     def save_project_memory(self, project_memory_file: str, memory: Dict[str, List[str]]):
@@ -214,21 +223,33 @@ class MemoryManager:
         """
         Save temp memory to file.
         
-        TempMemory.txt contains four sections (in order):
+        TempMemory.txt contains the following sections (in order):
+        - Writing Context (at the top)
         - Topic Sentence
         - Bullet Points
         - Template Flow
         - Current Paragraph
+        - Revision Feedback
+        - Output (at the bottom)
         
         Args:
             temp_memory_file: Path to TempMemory.txt
-            memory: Dictionary of memory sections with keys: "Topic Sentence", "Bullet Points", "Template Flow", "Current Paragraph"
+            memory: Dictionary of memory sections with keys: "Writing Context", "Topic Sentence", "Bullet Points", 
+                    "Template Flow", "Current Paragraph", "Revision Feedback", "Output"
         """
         temp_memory_file = Path(temp_memory_file)
         temp_memory_file.parent.mkdir(parents=True, exist_ok=True)
         
-        # Define the required sections in order (Revision Feedback is optional)
-        required_sections = ["Topic Sentence", "Bullet Points", "Template Flow", "Current Paragraph", "Revision Feedback"]
+        # Define the sections in order (Writing Context at top, Output at bottom)
+        required_sections = [
+            "Writing Context",
+            "Topic Sentence",
+            "Bullet Points",
+            "Template Flow",
+            "Current Paragraph",
+            "Revision Feedback",
+            "Output"
+        ]
         
         with open(temp_memory_file, 'w', encoding='utf-8') as f:
             for section_name in required_sections:

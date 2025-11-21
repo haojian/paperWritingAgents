@@ -63,15 +63,18 @@ class ProjectCreator:
                 f.write("===== Previous Content =====\n\n")
         
         # Create TempMemory.txt
-        # TempMemory.txt contains five sections: Topic Sentence, Bullet Points, Template Flow, Current Paragraph, Revision Feedback
+        # TempMemory.txt contains: Writing Context (top), Topic Sentence, Bullet Points, Template Flow, 
+        # Current Paragraph, Revision Feedback, Output (bottom)
         temp_memory_file = project_memory_dir / "TempMemory.txt"
         if not temp_memory_file.exists():
             with open(temp_memory_file, 'w', encoding='utf-8') as f:
+                f.write("===== Writing Context =====\n\n")
                 f.write("===== Topic Sentence =====\n\n")
                 f.write("===== Bullet Points =====\n\n")
                 f.write("===== Template Flow =====\n\n")
                 f.write("===== Current Paragraph =====\n\n")
                 f.write("===== Revision Feedback =====\n\n")
+                f.write("===== Output =====\n\n")
         
         # Create Intermediate directory
         intermediate_dir = project_dir / "Intermediate"
