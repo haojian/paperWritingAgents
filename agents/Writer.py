@@ -19,12 +19,18 @@ Usage:
     result = writer.new_paragraph()
     # Returns: {'plain_text': ..., 'latex': ...}
     
-    # ReviseParagraph mode: Revise an existing paragraph
-    # Requires TempMemory.txt with: Current Paragraph, Revision Feedback
+    #     ReviseParagraph mode: Revise an existing paragraph
+    # Requires TempMemory.txt with: Current Paragraph, Revision Feedback (or inline comments in {})
     # Optional: Topic Sentence, Bullet Points, Template Flow
     result = writer.revise_paragraph()
     # Returns: {'plain_text': ..., 'latex': ..., 'version': 1}
     # Saves to WritingHistory.txt with version number
+    
+    # Inline Comments Feature:
+    # You can add inline comments in curly braces {} within your text.
+    # Example: "This is a sentence. {Improve this sentence to be more concise.}"
+    # The writer will extract these comments and use them as revision feedback.
+    # Comments are automatically removed from the final output.
     
 Memory Files:
     ProjectMemory.txt (in Memory/ folder):
@@ -37,6 +43,8 @@ Memory Files:
         - Bullet Points: Bullet points to expand on
         - Template Flow: Template describing the logic flow
         - Current Paragraph: Current paragraph content (for revision)
+          * Can include inline comments in curly braces: {comment text}
+          * Example: "This sentence needs work. {Make it more concise.}"
         - Revision Feedback: Feedback on what needs to be changed (for revision)
         - Output: The resulting paragraph (at the bottom, written by the writer)
 
@@ -144,6 +152,9 @@ class Writer:
         
         template_flow_items = temp_memory.get("Template Flow", [])
         template = "\n".join(template_flow_items) if template_flow_items else None
+
+        current_paragraph_items = temp_memory.get("Current Paragraph", [])
+        current_paragraph = "\n".join(current_paragraph_items) if current_paragraph_items else None
         
         # Get key ideas from project memory for context
         project_key_ideas = project_memory.get("Key Ideas", [])
@@ -218,6 +229,9 @@ Ensure the revised paragraph:
         # Generate plain text paragraph
         plain_text = self.ai_wrapper.generate(prompt)
         
+        # Remove any inline comments that might have been generated (shouldn't happen, but just in case)
+        plain_text, _ = self._extract_inline_comments(plain_text)
+        
         # Convert to LaTeX format
         latex_text = self._convert_to_latex(plain_text)
         
@@ -264,10 +278,25 @@ Ensure the revised paragraph:
         writing_context = "\n".join(writing_context_items) if writing_context_items else None
         
         current_paragraph_items = temp_memory.get("Current Paragraph", [])
-        current_paragraph = "\n".join(current_paragraph_items) if current_paragraph_items else None
+        current_paragraph_raw = "\n".join(current_paragraph_items) if current_paragraph_items else None
+        
+        # Extract inline comments from Current Paragraph and remove them
+        inline_comments = []
+        if current_paragraph_raw:
+            current_paragraph, inline_comments = self._extract_inline_comments(current_paragraph_raw)
+        else:
+            current_paragraph = None
         
         revision_feedback_items = temp_memory.get("Revision Feedback", [])
         revision_feedback = "\n".join(revision_feedback_items) if revision_feedback_items else None
+        
+        # Combine inline comments with existing revision feedback
+        if inline_comments:
+            inline_feedback = "Inline comments from the text:\n" + "\n".join(f"- {comment}" for comment in inline_comments)
+            if revision_feedback:
+                revision_feedback = f"{revision_feedback}\n\n{inline_feedback}"
+            else:
+                revision_feedback = inline_feedback
         
         topic_sentence_items = temp_memory.get("Topic Sentence", [])
         topic_sentence = topic_sentence_items[0] if topic_sentence_items else None
@@ -281,8 +310,9 @@ Ensure the revised paragraph:
         if not current_paragraph or not current_paragraph.strip():
             raise ValueError("Current Paragraph is required in TempMemory.txt for ReviseParagraph mode")
         
+        # Revision feedback can come from either the Revision Feedback section or inline comments
         if not revision_feedback or not revision_feedback.strip():
-            raise ValueError("Revision Feedback is required in TempMemory.txt for ReviseParagraph mode")
+            raise ValueError("Revision Feedback is required in TempMemory.txt for ReviseParagraph mode (or provide inline comments in Current Paragraph using {comment} format)")
         
         # Get key ideas from project memory for context
         project_key_ideas = project_memory.get("Key Ideas", [])
@@ -351,6 +381,9 @@ Ensure the revised paragraph:
         # Generate revised paragraph
         plain_text = self.ai_wrapper.generate(prompt)
         
+        # Remove any inline comments that might have been generated (shouldn't happen, but just in case)
+        plain_text, _ = self._extract_inline_comments(plain_text)
+        
         # Convert to LaTeX format
         latex_text = self._convert_to_latex(plain_text)
         
@@ -366,6 +399,45 @@ Ensure the revised paragraph:
             'latex': latex_text,
             'version': version
         }
+    
+    def _extract_inline_comments(self, text: str) -> tuple[str, list[str]]:
+        """
+        Extract inline comments from text that are enclosed in curly braces {}.
+        
+        Inline comments are used to provide revision feedback directly in the text.
+        Example: "This sentence needs work. {Make it more concise and clear.}"
+        
+        Args:
+            text: Text that may contain inline comments like {comment text}
+            
+        Returns:
+            Tuple of (text_without_comments, list_of_comments)
+        """
+        # Pattern to match {comment text}
+        # This handles simple cases: {comment} and avoids matching escaped braces
+        # For nested braces, we use a simple approach: match from { to the first }
+        pattern = r'\{([^}]*)\}'
+        
+        comments = []
+        text_without_comments = text
+        
+        # Find all matches
+        matches = list(re.finditer(pattern, text))
+        for match in matches:
+            comment = match.group(1).strip()
+            if comment:  # Only add non-empty comments
+                comments.append(comment)
+        
+        # Remove all inline comments from text
+        text_without_comments = re.sub(pattern, '', text)
+        
+        # Clean up extra whitespace (multiple spaces/newlines)
+        # Replace multiple spaces with single space, but preserve paragraph breaks
+        text_without_comments = re.sub(r' +', ' ', text_without_comments)
+        text_without_comments = re.sub(r'\n\s*\n+', '\n\n', text_without_comments)
+        text_without_comments = text_without_comments.strip()
+        
+        return text_without_comments, comments
     
     def _convert_to_latex(self, text: str) -> str:
         """
