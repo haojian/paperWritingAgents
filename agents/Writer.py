@@ -16,6 +16,7 @@ Usage:
     
     # NewParagraph mode: Write a new paragraph
     # Requires TempMemory.txt with: Topic Sentence, Bullet Points, Template Flow (optional)
+    # Any content in "Current Paragraph" is ignored for this mode.
     result = writer.new_paragraph()
     # Returns: {'plain_text': ..., 'latex': ...}
     
@@ -52,13 +53,14 @@ Output Files:
     - WritingHistory.txt: Plain text history of all writing (with version numbers for revisions)
     - Output/Latex.txt: Latest LaTeX formatted output
     - Output/Plaintext.txt: Latest plain text output
+    - Intermediate/prompt.txt: Log of the exact prompts sent to the AI (per mode run)
 """
 
 import os
 import sys
 import re
 from pathlib import Path
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Union
 from datetime import datetime
 
 # Handle imports when run as script or module
@@ -112,6 +114,7 @@ class Writer:
         self.temp_memory_file = self.project_path / "Memory" / "TempMemory.txt"
         self.writing_history_file = self.project_path / "Intermediate" / "WritingHistory.txt"
         self.todo_history_file = self.project_path / "Intermediate" / "TodoHistory.txt"
+        self.prompt_history_file = self.project_path / "Intermediate" / "prompt.txt"
         self.output_plaintext = self.project_path / "Output" / "Plaintext.txt"
         self.output_latex = self.project_path / "Output" / "Latex.txt"
         # Legacy: kept for backward compatibility but not used in new modes
@@ -148,83 +151,46 @@ class Writer:
         topic_sentence_items = temp_memory.get("Topic Sentence", [])
         topic_sentence = topic_sentence_items[0] if topic_sentence_items else None
         
-        bullet_points = temp_memory.get("Bullet Points", [])
+        bullet_points = [point.strip() for point in temp_memory.get("Bullet Points", []) if point.strip()]
         
-        template_flow_items = temp_memory.get("Template Flow", [])
+        template_flow_items = [item for item in temp_memory.get("Template Flow", []) if item.strip()]
         template = "\n".join(template_flow_items) if template_flow_items else None
 
-        current_paragraph_items = temp_memory.get("Current Paragraph", [])
-        current_paragraph = "\n".join(current_paragraph_items) if current_paragraph_items else None
-        
         # Get key ideas from project memory for context
         project_key_ideas = project_memory.get("Key Ideas", [])
         project_previous_content = project_memory.get("Previous Content", [])
         
-        # Build prompt
-        prompt = """Write a well-structured research paper paragraph based on the following information:
-
-"""
+        # Build prompt with minimal redundancy
+        prompt_parts: List[str] = [
+            "You are an expert research writer. Produce exactly one cohesive academic paragraph using only the information below."
+        ]
         
-        # Add Writing Context at the top if provided
-        if writing_context:
-            prompt += f"""===== Writing Context =====
-{writing_context}
-
-"""
+        self._append_prompt_section(prompt_parts, "Writing Context", writing_context)
+        self._append_prompt_section(prompt_parts, "Project Key Ideas", project_key_ideas[:5], bulletize=True)
+        self._append_prompt_section(prompt_parts, "Topic Sentence", topic_sentence)
+        self._append_prompt_section(prompt_parts, "Bullet Points", bullet_points, bulletize=True)
+        self._append_prompt_section(prompt_parts, "Template Flow", template)
         
-        if project_key_ideas:
-            prompt += "===== Project Context: Key Ideas =====\n"
-            for idea in project_key_ideas[:5]:  # Use top 5 for context
-                prompt += f"- {idea}\n"
-            prompt += "\n"
+        self._append_prompt_section(prompt_parts, "Recent Project Content", project_previous_content[:3], bulletize=True)
+        
+        requirements: List[str] = []
+        requirements.append("Write a new standalone paragraph (ignore any previously drafted text).")
         
         if topic_sentence:
-            prompt += f"""===== Topic Sentence =====
-{topic_sentence}
-
-"""
-        
+            requirements.append("Incorporate the provided topic sentence (or a refined variant) near the beginning.")
         if bullet_points:
-            prompt += "===== Bullet Points =====\n"
-            for point in bullet_points:
-                prompt += f"- {point}\n"
-            prompt += "\n"
-        
+            requirements.append("Cover every bullet point with specific evidence or reasoning.")
         if template:
-            prompt += f"""===== Template Flow =====
-{template}
-
-"""
+            requirements.append("Follow the template flow order when developing the paragraph.")
+        requirements.append("Maintain scholarly tone, smooth transitions, and precise language.")
+        requirements.append("Return only the finalized paragraph (no explanations or lists).")
         
-        if current_paragraph:
-            prompt += f"""===== Current Paragraph (for revision) =====
-{current_paragraph}
-
-"""
+        self._append_prompt_section(prompt_parts, "Output Requirements", [f"- {req}" for req in requirements])
         
-        if project_previous_content:
-            prompt += "===== Previous Content (for context) =====\n"
-            for content in project_previous_content[:3]:  # Use top 3 for context
-                prompt += f"- {content}\n"
-            prompt += "\n"
+        prompt = "\n".join(prompt_parts).strip() + "\n"
         
-        if current_paragraph:
-            prompt += """Revise the current paragraph based on the topic sentence, bullet points, and template flow.
-Ensure the revised paragraph:
-- Starts with or incorporates the topic sentence
-- Expands on the bullet points provided
-- Follows the template flow structure
-- Maintains academic tone and style
-- Is self-contained and makes sense as a standalone paragraph
-"""
-        else:
-            prompt += """Write a cohesive, well-structured academic paragraph that:
-- Starts with or incorporates the topic sentence
-- Expands on the bullet points provided
-- Follows the template flow structure
-- Maintains academic tone and style
-- Is self-contained and makes sense as a standalone paragraph
-"""
+        # Save prompt for auditing/debugging
+        self._save_prompt(prompt, mode="NewParagraph")
         
         # Generate plain text paragraph
         plain_text = self.ai_wrapper.generate(prompt)
@@ -281,7 +247,7 @@ Ensure the revised paragraph:
         current_paragraph_raw = "\n".join(current_paragraph_items) if current_paragraph_items else None
         
         # Extract inline comments from Current Paragraph and remove them
-        inline_comments = []
+        inline_comments: List[Dict[str, str]] = []
         if current_paragraph_raw:
             current_paragraph, inline_comments = self._extract_inline_comments(current_paragraph_raw)
         else:
@@ -290,13 +256,10 @@ Ensure the revised paragraph:
         revision_feedback_items = temp_memory.get("Revision Feedback", [])
         revision_feedback = "\n".join(revision_feedback_items) if revision_feedback_items else None
         
-        # Combine inline comments with existing revision feedback
-        if inline_comments:
-            inline_feedback = "Inline comments from the text:\n" + "\n".join(f"- {comment}" for comment in inline_comments)
-            if revision_feedback:
-                revision_feedback = f"{revision_feedback}\n\n{inline_feedback}"
-            else:
-                revision_feedback = inline_feedback
+        # Combine inline comments with existing revision feedback (without duplicating content)
+        inline_feedback_lines: List[str] = self._format_inline_feedback(inline_comments)
+        if inline_feedback_lines and (not revision_feedback or not revision_feedback.strip()):
+            revision_feedback = "Address every inline comment listed below."
         
         topic_sentence_items = temp_memory.get("Topic Sentence", [])
         topic_sentence = topic_sentence_items[0] if topic_sentence_items else None
@@ -318,65 +281,46 @@ Ensure the revised paragraph:
         project_key_ideas = project_memory.get("Key Ideas", [])
         project_previous_content = project_memory.get("Previous Content", [])
         
-        # Build revision prompt
-        prompt = """Revise the following paragraph based on the revision feedback and requirements provided below.
-
-"""
+        # Build concise revision prompt
+        prompt_parts: List[str] = [
+            "You are revising the following academic paragraph. Apply the feedback carefully and return one improved paragraph."
+        ]
         
-        # Add Writing Context at the top if provided
-        if writing_context:
-            prompt += f"""===== Writing Context =====
-{writing_context}
-
-"""
+        self._append_prompt_section(prompt_parts, "Writing Context", writing_context)
+        self._append_prompt_section(prompt_parts, "Current Paragraph", current_paragraph)
+        self._append_prompt_section(prompt_parts, "Revision Feedback", revision_feedback)
+        self._append_prompt_section(
+            prompt_parts,
+            "Inline Comments (sentence-specific)",
+            inline_feedback_lines
+        )
+        self._append_prompt_section(prompt_parts, "Project Key Ideas", project_key_ideas[:5], bulletize=True)
+        self._append_prompt_section(prompt_parts, "Topic Sentence", topic_sentence)
+        filtered_bullets = [bp.strip() for bp in bullet_points if bp.strip()]
+        self._append_prompt_section(prompt_parts, "Bullet Points", filtered_bullets, bulletize=True)
+        self._append_prompt_section(prompt_parts, "Template Flow", template)
+        self._append_prompt_section(prompt_parts, "Recent Project Content", project_previous_content[:3], bulletize=True)
         
-        prompt += f"""===== Current Paragraph =====
-{current_paragraph}
-
-===== Revision Feedback =====
-{revision_feedback}
-
-"""
-        
-        if project_key_ideas:
-            prompt += "===== Project Context: Key Ideas =====\n"
-            for idea in project_key_ideas[:5]:  # Use top 5 for context
-                prompt += f"- {idea}\n"
-            prompt += "\n"
-        
+        requirements: List[str] = [
+            "Resolve every item in the revision feedback before returning the paragraph."
+        ]
+        if inline_feedback_lines:
+            requirements.append("Ensure each inline comment's sentence reflects the requested change.")
         if topic_sentence:
-            prompt += f"""===== Topic Sentence =====
-{topic_sentence}
-
-"""
-        
-        if bullet_points:
-            prompt += "===== Bullet Points =====\n"
-            for point in bullet_points:
-                prompt += f"- {point}\n"
-            prompt += "\n"
-        
+            requirements.append("Keep the topic sentence consistent with the provided guidance.")
+        if filtered_bullets:
+            requirements.append("Address every bullet point with concrete detail or logic.")
         if template:
-            prompt += f"""===== Template Flow =====
-{template}
-
-"""
+            requirements.append("Honor the template flow order when restructuring content.")
+        requirements.append("Preserve the original meaning and claims while improving clarity and flow.")
+        requirements.append("Return only the revised paragraph text (no explanations).")
         
-        if project_previous_content:
-            prompt += "===== Previous Content (for context) =====\n"
-            for content in project_previous_content[:3]:  # Use top 3 for context
-                prompt += f"- {content}\n"
-            prompt += "\n"
+        self._append_prompt_section(prompt_parts, "Output Requirements", [f"- {req}" for req in requirements])
         
-        prompt += """Revise the current paragraph according to the revision feedback. Ensure the revised paragraph:
-- Addresses all points in the revision feedback
-- Starts with or incorporates the topic sentence (if provided)
-- Expands on the bullet points provided (if provided)
-- Follows the template flow structure (if provided)
-- Maintains academic tone and style
-- Is self-contained and makes sense as a standalone paragraph
-- Improves upon the current version based on the feedback
-"""
+        prompt = "\n".join(prompt_parts).strip() + "\n"
+        
+        # Save prompt for auditing/debugging
+        self._save_prompt(prompt, mode="ReviseParagraph")
         
         # Generate revised paragraph
         plain_text = self.ai_wrapper.generate(prompt)
@@ -400,7 +344,7 @@ Ensure the revised paragraph:
             'version': version
         }
     
-    def _extract_inline_comments(self, text: str) -> tuple[str, list[str]]:
+    def _extract_inline_comments(self, text: str) -> tuple[str, List[Dict[str, str]]]:
         """
         Extract inline comments from text that are enclosed in curly braces {}.
         
@@ -411,33 +355,56 @@ Ensure the revised paragraph:
             text: Text that may contain inline comments like {comment text}
             
         Returns:
-            Tuple of (text_without_comments, list_of_comments)
+            Tuple of (text_without_comments, list_of_comment_dicts)
         """
-        # Pattern to match {comment text}
-        # This handles simple cases: {comment} and avoids matching escaped braces
-        # For nested braces, we use a simple approach: match from { to the first }
         pattern = r'\{([^}]*)\}'
+        comments: List[Dict[str, str]] = []
+        cleaned_parts: List[str] = []
+        last_index = 0
         
-        comments = []
-        text_without_comments = text
+        for match in re.finditer(pattern, text):
+            start, end = match.span()
+            cleaned_parts.append(text[last_index:start])
+            
+            comment_text = match.group(1).strip()
+            if comment_text:
+                target_sentence = self._get_sentence_for_comment(text, start)
+                comments.append({
+                    "comment": comment_text,
+                    "target_sentence": target_sentence
+                })
+            
+            last_index = end
         
-        # Find all matches
-        matches = list(re.finditer(pattern, text))
-        for match in matches:
-            comment = match.group(1).strip()
-            if comment:  # Only add non-empty comments
-                comments.append(comment)
-        
-        # Remove all inline comments from text
-        text_without_comments = re.sub(pattern, '', text)
+        cleaned_parts.append(text[last_index:])
+        text_without_comments = ''.join(cleaned_parts)
         
         # Clean up extra whitespace (multiple spaces/newlines)
-        # Replace multiple spaces with single space, but preserve paragraph breaks
         text_without_comments = re.sub(r' +', ' ', text_without_comments)
         text_without_comments = re.sub(r'\n\s*\n+', '\n\n', text_without_comments)
         text_without_comments = text_without_comments.strip()
         
         return text_without_comments, comments
+
+    def _get_sentence_for_comment(self, text: str, comment_start: int) -> str:
+        """
+        Best-effort extraction of the sentence (or clause) immediately preceding an inline comment.
+        This helps the AI model understand exactly which sentence the inline feedback refers to.
+        """
+        preceding_text = text[:comment_start]
+        
+        sentence_start = 0
+        for i in range(len(preceding_text) - 1, -1, -1):
+            if preceding_text[i] in '.?!\n':
+                sentence_start = i + 1
+                break
+        
+        sentence = preceding_text[sentence_start:].strip()
+        
+        if not sentence:
+            sentence = preceding_text[-200:].strip()
+        
+        return sentence
     
     def _convert_to_latex(self, text: str) -> str:
         """
@@ -621,6 +588,36 @@ Please revise the writing to address all items in the todo list.
         with open(self.output_plaintext, 'w', encoding='utf-8') as f:
             f.write(text)
     
+    def _save_prompt(self, prompt: str, mode: str):
+        """
+        Save the exact prompt sent to the AI into prompt.txt for debugging/auditing.
+        
+        Args:
+            prompt: The prompt text that will be sent to the AI model
+            mode: The writer mode (e.g., "NewParagraph", "ReviseParagraph")
+        """
+        self.prompt_history_file.parent.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        entry = []
+        entry.append(f"{'='*80}")
+        entry.append(f"Mode: {mode} | Timestamp: {timestamp}")
+        entry.append(f"{'='*80}")
+        entry.append(prompt.rstrip())
+        entry.append("")  # blank line separator
+        entry_text = "\n".join(entry) + "\n"
+        
+        existing_content = ""
+        if self.prompt_history_file.exists():
+            with open(self.prompt_history_file, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+        
+        with open(self.prompt_history_file, 'w', encoding='utf-8') as f:
+            if existing_content:
+                f.write(entry_text + existing_content)
+            else:
+                f.write(entry_text)
+    
     def _save_output_to_temp_memory(self, output_text: str):
         """
         Save the resulting paragraph to TempMemory.txt Output section.
@@ -638,6 +635,60 @@ Please revise the writing to address all items in the todo list.
         
         # Save back to file
         self.memory_manager.save_temp_memory(str(self.temp_memory_file), temp_memory)
+    
+    def _append_prompt_section(
+        self,
+        prompt_parts: List[str],
+        title: str,
+        content: Optional[Union[str, List[str]]],
+        bulletize: bool = False
+    ):
+        """
+        Append a formatted section to the prompt if content is provided.
+        """
+        if content is None:
+            return
+        
+        if isinstance(content, list):
+            entries = [str(item).strip() for item in content if str(item).strip()]
+            if not entries:
+                return
+        else:
+            content_str = str(content).strip()
+            if not content_str:
+                return
+            entries = content_str.splitlines()
+        
+        prompt_parts.append(f"===== {title} =====")
+        for entry in entries:
+            if bulletize:
+                if entry.startswith(("-", "•")):
+                    prompt_parts.append(entry)
+                else:
+                    prompt_parts.append(f"- {entry}")
+            else:
+                prompt_parts.append(entry)
+        prompt_parts.append("")
+    
+    def _format_inline_feedback(self, inline_comments: List[Dict[str, str]]) -> List[str]:
+        """
+        Format inline comments into a readable string that ties each comment to its sentence.
+        """
+        if not inline_comments:
+            return []
+        
+        lines: List[str] = []
+        for idx, entry in enumerate(inline_comments, start=1):
+            sentence = entry.get("target_sentence", "").strip()
+            comment = entry.get("comment", "").strip()
+            
+            if sentence:
+                lines.append(f"{idx}. Sentence: {sentence}")
+                lines.append(f"   Feedback: {comment}")
+            else:
+                lines.append(f"{idx}. Feedback: {comment}")
+        
+        return lines
     
     def _save_output(self, text: str):
         """Save text to output files (legacy method for backward compatibility)."""

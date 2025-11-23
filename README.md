@@ -19,12 +19,20 @@ pip install -r requirements.txt
 ```
 
 **API Keys (Required for AI features):**
-- **Gemini API**: 
+
+The system supports both Gemini and OpenAI models. You need at least one API key configured.
+
+- **Gemini API** (Default): 
   - Install: `pip install google-genai`
   - Get key: [Google AI Studio](https://makersuite.google.com/app/apikey)
   - Set: `export GEMINI_API_KEY="your_key"`
-- **OpenAI API**: Get key from [OpenAI Platform](https://platform.openai.com/api-keys)
+  - Default model: `gemini-2.5-flash`
+
+- **OpenAI API**: 
+  - Install: `pip install openai`
+  - Get key: [OpenAI Platform](https://platform.openai.com/api-keys)
   - Set: `export OPENAI_API_KEY="your_key"`
+  - Default model: `gpt-4`
 
 ## File Structure
 
@@ -118,6 +126,7 @@ python tools/ProjectCreator.py "MyResearchProject"
   - `Intermediate/` - Intermediate files
     - `AutoWritingHistory.txt` - Writing history log
     - `TodoHistory.txt` - Todo list history
+    - `prompt.txt` - Log of prompts sent to the AI
   - `Output/` - Output files
     - `plaintext.txt` - Plain text output
     - `output.txt` - Final output
@@ -146,18 +155,32 @@ Write new paragraphs using project memory:
 ```python
 from agents import Writer
 
+# Using Gemini (default)
 writer = Writer(project_path="projects/MyProject")
 result = writer.new_paragraph()
+
+# Using OpenAI
+writer = Writer(project_path="projects/MyProject", api_provider="openai")
+result = writer.new_paragraph()
+
 # Returns: {'plain_text': ..., 'latex': ...}
 ```
+
+> **Note:** `new_paragraph` always writes a fresh paragraph. If `TempMemory.txt` still contains an older draft inside `Current Paragraph`, it will be ignored for this mode.
 
 #### ReviseParagraph Mode
 
 Revise existing paragraphs based on feedback:
 
 ```python
+# Using Gemini (default)
 writer = Writer(project_path="projects/MyProject")
 result = writer.revise_paragraph()
+
+# Using OpenAI
+writer = Writer(project_path="projects/MyProject", api_provider="openai")
+result = writer.revise_paragraph()
+
 # Returns: {'plain_text': ..., 'latex': ..., 'version': 1}
 # Saves to WritingHistory.txt with version number
 ```
@@ -185,12 +208,22 @@ The writer supports inline editing feedback embedded directly in the paragraph u
 #### Using Command Line
 
 ```bash
-# NewParagraph mode
-python -m agents.Writer projects/MyProject --mode newparagraph
+# NewParagraph mode (using Gemini - default)
+python -m agents.Writer MyProject --mode newparagraph
 
-# ReviseParagraph mode
-python -m agents.Writer projects/MyProject --mode reviseparagraph
+# NewParagraph mode (using OpenAI)
+python -m agents.Writer MyProject --mode newparagraph --provider openai
+
+# ReviseParagraph mode (using Gemini - default)
+python -m agents.Writer MyProject --mode reviseparagraph
+
+# ReviseParagraph mode (using OpenAI)
+python -m agents.Writer MyProject --mode reviseparagraph --provider openai
 ```
+
+**Note:** The `project_path` argument should be just the project name (e.g., `MyProject`), not the full path. The system automatically looks in the `projects/` directory.
+
+Every time a mode runs, the exact prompt sent to the AI is appended to `projects/MyProject/Intermediate/prompt.txt`, so you can audit or reuse prompts later.
 
 Ask professor for review:
 ```python
@@ -277,9 +310,18 @@ Unified wrapper for Gemini and OpenAI:
 ```python
 from tools import CloudAIWrapper
 
-ai = CloudAIWrapper(provider="gemini")  # or "openai"
+# Using Gemini (default)
+ai = CloudAIWrapper(provider="gemini")
+text = ai.generate("Write a paragraph about...")
+
+# Using OpenAI
+ai = CloudAIWrapper(provider="openai")
 text = ai.generate("Write a paragraph about...")
 ```
+
+**Default Models:**
+- Gemini: `gemini-2.5-flash`
+- OpenAI: `gpt-4`
 
 ### MemoryManager
 
@@ -342,7 +384,12 @@ python unit_tests/run_tests.py
 5. **Write paragraphs:**
    ```python
    from agents import Writer
-   writer = Writer("projects/MyPaper")
+   
+   # Using Gemini (default)
+   writer = Writer("MyPaper")  # Project name only, not full path
+   
+   # Using OpenAI
+   writer = Writer("MyPaper", api_provider="openai")
    
    # NewParagraph mode
    result = writer.new_paragraph()
